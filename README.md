@@ -9,7 +9,7 @@ Table of markers used within the study.
 | Marker   | F Primer| F Primer Sequence       | R Primer| R Primer Sequence    | Size (bp) | Citation                                       |
 |:--------:|:-------:|:-----------------------:|:-------:|:--------------------:|:---------:|:----------------------------------------------:|
 | 16S      | 515F    | GTGYCAGCMGCCGCGGTAA     | 806R    | GGACTACNVGGGTWTCTAAT | 390       | Parada *et al.* 2016 and Apprill *et al.* 2015 |
-| ITS      | ITS1f   | CTTGGTCATTTAGAGGAAGTAA  | ITS2    | GCTGCGTTCTTCATCGATGC | 390       | Smith and Peay 2014                            |
+| ITS      | ITS1f   | CTTGGTCATTTAGAGGAAGTAA  | ITS2    | GCTGCGTTCTTCATCGATGC | variable       | Smith and Peay 2014                       |
 
 
 ## Experimental Design
