@@ -27,7 +27,7 @@ Coming Soon!
 
 [***See Bacterial_prep_n_analysis folder***](https://github.com/Kenizzer/Maize_Drought_Microbiome/tree/main/Bacterial_prep_n_analysis)
 
-- Bacterial sequences were processed, filtered, and CLR transformed in [***See MDM_bacterial_dataprep.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_bacterial_dataprep.R).
-- Bacterial main analysis was conducted in xxLINK HERExx.
-- Bacterial machine learning was conducted in xxLINK HERExx.
-- Bacterial associations between plant phenotype and taxon abundance was conducted in  xxLINK HERExx.
+- Bacterial sequences were processed, filtered, and CLR transformed in [***MDM_bacterial_dataprep.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_bacterial_dataprep.R).
+- Bacterial main analysis was conducted in [***MDM_bacterial_main_analysis.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_bacterial_main_analysis.R).
+- Bacterial machine learning was conducted in [***MDM_bacterial_machine_learning.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_bacterial_machine_learning.R).
+- Bacterial associations between plant phenotype and taxon abundance was conducted in [***MDM_phenotype_to_microbiome.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_phenotype_to_microbiome.R).
