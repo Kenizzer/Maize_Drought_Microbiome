@@ -51,7 +51,6 @@ drt.bact.late.clr <- readRDS('Intermediate_data/phyloseq_b_asv_clean_inoculated_
 # Split out a metadata df for use outside of phyloseq
 sampledata <- sample_data(drt.bact.late.clr)
 # LMs w/ genotype included in the model
-# *!*!*!* Changed to lmerTest::lmer to allow for P values in anova tables
 drt.bact.late.z.richness <- lmerTest::lmer(Chao1  ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = data.frame(sampledata))
 drt.bact.late.Shannon    <- lmerTest::lmer(log(Shannon)  ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = data.frame(sampledata))
 drt.bact.late.InvSimpson <- lmerTest::lmer(log(InvSimpson)  ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = data.frame(sampledata))
@@ -107,7 +106,7 @@ table(phyloseq::tax_table(drt.bact.late.clr)[, "Class"]) #total community
 
 
 # Which phyla show largest changes by factors
-#Statistical tests
+drt.bact.late.clr_phylum <- phyloseq::tax_glom(drt.bact.late.clr, "Phylum")
 phylum_df <- psmelt(drt.bact.late.clr_phylum)
 levels(as.factor(phylum_df$Phylum))
 mod.act <- lmerTest::lmer(filter(phylum_df, Phylum == "Actinobacteria")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Actinobacteria"))
@@ -354,8 +353,8 @@ anova.cca(drt.bact.dbRDA)
 
 # plots controlled by plate and logObs and constrained by each factor
 # main effects
-a # Used in figure 3
-b
+a 
+b # Used in figure 3
 c
 plot1 <- ggarrange(c, ncol = 1, align = 'h', legend = 'right')
 ggsave("figures/main_effect_RDA_ordination.svg", plot1, height = 6, width = 6)

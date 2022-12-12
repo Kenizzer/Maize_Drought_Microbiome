@@ -39,7 +39,7 @@ phyla_palette <- c("Actinobacteria" = "#88CCEE", "Armatimonadetes"= "#CC6677",
                              "Nitrospirae" = "#D55E00", "Proteobacteria" = "#117733",
                              "Planctomycetes" =  "#6699CC", "Verrucomicrobia" = "#882255",
                              "Deinococcus-Thermus" = "#000000", "Thaumarchaeota" = "#6948b8", 
-                             "Other" = "#888888" ) # come back and fix this, ggplot will add colors to the legend even when they are not used!
+                             "Other" = "#888888" )
 
 # Functions
 # Function to return metadata df from phyloseq object

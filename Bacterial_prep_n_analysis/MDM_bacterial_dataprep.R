@@ -124,7 +124,7 @@ Drought.or.Watered:Genotype                1    0.149 0.00246 0.7956  0.601
 SoilInoculum:Drought.or.Watered:Genotype   6    1.131 0.01874 1.0099  0.430    
 Residual                                 265   49.476 0.81949                  
 Total                                    292   60.374 1.00000"
-# Reasonable results
+
 # Clean up environment
 rm(pcoa.drt.bact.prop,drt.bact.prop)
 
