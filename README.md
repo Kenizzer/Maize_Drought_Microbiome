@@ -21,7 +21,9 @@ Table of markers used within the study.
 
 ## Phenotypic processing and analysis
 
-Coming Soon!
+[***See Phenotypic_analysis folder***](https://github.com/Kenizzer/Maize_Drought_Microbiome/tree/main/Phenotypic_analysis)
+
+- Main analysis was conducted in [***MDM_phenotypic_analysis.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Phenotypic_analysis/MDM_phenotypic_analysis.R).
 
 ## Soil processing and analysis
 
