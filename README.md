@@ -34,8 +34,13 @@ Coming Soon!
 - Bacterial sequences were processed, filtered, and CLR transformed in [***MDM_bacterial_dataprep.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_bacterial_dataprep.R).
 - Bacterial main analysis was conducted in [***MDM_bacterial_main_analysis.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_bacterial_main_analysis.R).
 - Bacterial machine learning was conducted in [***MDM_bacterial_machine_learning.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_bacterial_machine_learning.R).
-- Bacterial associations between plant phenotype and taxon abundance was conducted in [***MDM_phenotype_to_microbiome.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_phenotype_to_microbiome.R).
+- Bacterial associations between plant phenotype and taxon abundance was conducted in [***MDM_phenotype_to_microbiome.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Bacterial_prep_n_analysis/MDM_bacterial_phenotype_to_microbiome.R).
 
 ## Fungal processing and analysis
 
-Coming Soon!
+[***See Fungal_prep_n_analysis folder***](https://github.com/Kenizzer/Maize_Drought_Microbiome/tree/main/Fungal_prep_n_analysis)
+
+- Fungal sequences were processed, filtered, and CLR transformed in [***MDM_fungal_dataprep.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Fungal_prep_n_analysis/MDM_fungal_dataprep.R).
+- Fungal main analysis was conducted in [***MDM_fungal_main_analysis.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Fungal_prep_n_analysis/MDM_fungal_main_analysis.R).
+- Fungal machine learning was conducted in [***MDM_fungal_machine_learning.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Fungal_prep_n_analysis/MDM_fungal_machine_learning.R).
+- Fungal associations between plant phenotype and taxon abundance was conducted in [***MDM_phenotype_to_microbiome.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Fungal_prep_n_analysis/MDM_fungal_phenotype_to_microbiome.R).
