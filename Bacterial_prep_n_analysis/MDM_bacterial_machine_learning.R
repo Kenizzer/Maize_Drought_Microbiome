@@ -119,7 +119,7 @@ MachineLearning_RF_ranger <- function(PHYSEQ_OBJ_1, GROUPING, TREES) {
   test_y <- as.data.frame(ASV.df[-train_index, ])
   dim(train_x) #158
   dim(test_y) #40
-  # Train set, 474
+  # Train set, 158 samples
   train_x$Sample <- rownames(train_x)
   Training_meta.df <- merge(train_x, ASV_meta.df, by = 'Sample')
   train_x <- subset(Training_meta.df, select = -c(SoilLocation, SoilHabitat, Drought.or.Watered, Genotype, SoilInoculum))
@@ -127,7 +127,7 @@ MachineLearning_RF_ranger <- function(PHYSEQ_OBJ_1, GROUPING, TREES) {
   train_x <- subset(train_x, select = -c(Sample))
   Training_meta.df <- subset(Training_meta.df, select = c(Sample, SoilLocation, SoilHabitat, Drought.or.Watered, Genotype, SoilInoculum))
   rownames(Training_meta.df) <- Training_meta.df$Sample 
-  # Test set, 120 samples
+  # Test set, 40 samples
   test_y$Sample <- rownames(test_y)
   Testing_meta.df <- merge(test_y, ASV_meta.df, by = "Sample")
   test_y <- subset(Testing_meta.df, select = -c(SoilLocation, SoilHabitat, Drought.or.Watered, Genotype, SoilInoculum))
