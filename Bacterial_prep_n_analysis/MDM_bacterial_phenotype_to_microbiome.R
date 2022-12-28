@@ -155,10 +155,9 @@ mod <- bact.clr.long.SMR.mod_fam[bact.clr.long.SMR.mod_fam$Family == "Corynebact
 emtrends(mod, ~Drought.or.Watered, var = "Abundance")
 
 Cory_interaction_plot <- filter(drt.bact.late.clr_fam, Family == "Corynebacteriaceae") %>%
-  ggplot(aes(x = Abundance, y = ShootMassRateResid, fill = Drought.or.Watered, color = Drought.or.Watered)) +
+  ggplot(aes(x = Abundance, y = ShootMassRateResid, color = Drought.or.Watered)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  scale_fill_manual(name = "Treatment", values = treatment_pallete) +
   scale_color_manual(name = "Treatment", values = treatment_pallete) +
   annotate("text", x = 10, y = 0.040, label = "W = -0.0032", fontface = 'italic') +
   annotate("text", x = 10, y = 0.035, label = "D = -0.0001", fontface = 'italic') +
@@ -176,10 +175,9 @@ mod <- bact.clr.long.SMR.mod_fam[bact.clr.long.SMR.mod_fam$Family == "Streptococ
 emtrends(mod, ~Drought.or.Watered, var = "Abundance")
 
 Strep_interaction_plot <- filter(drt.bact.late.clr_fam, Family == "Streptococcaceae") %>%
-  ggplot(aes(x = Abundance, y = ShootMassRateResid, fill = Drought.or.Watered, color = Drought.or.Watered)) +
+  ggplot(aes(x = Abundance, y = ShootMassRateResid, color = Drought.or.Watered)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  scale_fill_manual(name = "Treatment", values = treatment_pallete) +
   scale_color_manual(name = "Treatment", values = treatment_pallete) +
   annotate("text", x = 10, y = 0.040, label = "W = -0.0031", fontface = 'italic') +
   annotate("text", x = 10, y = 0.035, label = "D = -0.0002", fontface = 'italic') +
