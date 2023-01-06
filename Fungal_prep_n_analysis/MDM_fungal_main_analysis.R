@@ -313,9 +313,21 @@ ggplot(class_top10, aes(x=Sample, y=Abundance, fill = Class)) +
 ####### Use perMANOVA to partition variance in community composition at the ASV level
 set.seed(8945761)
 
+# First assess the marginal effects of the terms w/ interaction 
+with(as(sample_data(drt.fungi.late.clr),'data.frame'),
+     adonis2(t(as(otu_table(drt.fungi.late.clr),'matrix')) ~ Genotype + SoilInoculum*Drought.or.Watered,
+             strata = Block, data=as(sample_data(drt.fungi.late.clr),'data.frame'), method='euclidean', by = "margin"))
+# interaction is non-significant, so remove from model and re-run to assess main effects.
+with(as(sample_data(drt.fungi.late.clr),'data.frame'),
+     adonis2(t(as(otu_table(drt.fungi.late.clr),'matrix')) ~ Genotype + SoilInoculum + Drought.or.Watered,
+             strata = Block, data=as(sample_data(drt.fungi.late.clr),'data.frame'), method='euclidean', by = "margin"))
+# No difference in P values assessing by margin
+
+# Present table with terms assessed sequential (okay, given the results above).
 perm <- with(as(sample_data(drt.fungi.late.clr),'data.frame'),
              adonis2(t(as(otu_table(drt.fungi.late.clr),'matrix')) ~ Genotype + SoilInoculum*Drought.or.Watered,
-                     strata = Block, data=as(sample_data(drt.fungi.late.clr),'data.frame'), method='euclidean'))
+                     strata = Block, data=as(sample_data(drt.fungi.late.clr),'data.frame'), method='euclidean', by = "term"))
+
 #                                                      Df SumOfSqs      R2      F Pr(>F)    
 "
 Genotype                          1      774 0.00749 1.0148  0.280    

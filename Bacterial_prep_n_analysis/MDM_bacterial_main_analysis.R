@@ -39,8 +39,7 @@ phyla_palette <- c("Actinobacteria" = "#88CCEE", "Armatimonadetes"= "#CC6677",
                             "Nitrospirae" = "#D55E00", "Proteobacteria" = "#117733",
                             "Planctomycetes" =  "#6699CC", "Verrucomicrobia" = "#882255",
                             "Deinococcus-Thermus" = "#000000", "Thaumarchaeota" = "#6948b8", 
-                            "Other" = "#888888") # come back and fix this, ggplot will add colors to the legend even when they are not used!
-
+                            "Other" = "#888888")
 
 ### Load datasets for use throughout ###
 drt.bact.late <- readRDS('Intermediate_data/phyloseq_b_asv_clean_inoculated_late.RDS')
@@ -299,15 +298,26 @@ rm(a,b,c,d)
 ####### Use perMANOVA to partition variance in community composition at the ASV level
 set.seed(777)
 
+# First assess the marginal effects of the terms w/ interaction 
+with(as(sample_data(drt.bact.late.clr),'data.frame'),
+     adonis2(t(as(otu_table(drt.bact.late.clr),'matrix')) ~ Genotype + SoilInoculum*Drought.or.Watered,
+     strata = Block, data=as(sample_data(drt.bact.late.clr),'data.frame'), method='euclidean', by = "margin"))
+# interaction is non-significant, so remove from model and re-run to assess main effects.
+with(as(sample_data(drt.bact.late.clr),'data.frame'),
+     adonis2(t(as(otu_table(drt.bact.late.clr),'matrix')) ~ Genotype + SoilInoculum + Drought.or.Watered,
+     strata = Block, data=as(sample_data(drt.bact.late.clr),'data.frame'), method='euclidean', by = "margin"))
+# No difference in P values assessing by margin
+
+# Present table with terms assessed sequential (okay, given the results above).
 perm <- with(as(sample_data(drt.bact.late.clr),'data.frame'),
              adonis2(t(as(otu_table(drt.bact.late.clr),'matrix')) ~ Genotype + SoilInoculum*Drought.or.Watered,
-                     strata = Block, data=as(sample_data(drt.bact.late.clr),'data.frame'), method='euclidean'))
+             strata = Block, data=as(sample_data(drt.bact.late.clr),'data.frame'), method='euclidean', by = "term"))
 #                                 Df SumOfSqs      R2      F Pr(>F)    
 "
-Genotype                          1     4109 0.00605 1.2303  0.213    
+Genotype                          1     4109 0.00605 1.2303  0.221    
 SoilInoculum                      5    34055 0.05012 2.0395  0.001 ***
 Drought.or.Watered                1     7483 0.01101 2.2409  0.001 ***
-SoilInoculum:Drought.or.Watered   5    16011 0.02356 0.9589  0.520    
+SoilInoculum:Drought.or.Watered   5    16011 0.02356 0.9589  0.500    
 Residual                        185   617812 0.90926                  
 Total                           197   679469 1.00000"
 #

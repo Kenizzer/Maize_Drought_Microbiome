@@ -46,12 +46,6 @@ class_palette <- c("Eurotiomycetes" = "#88CCEE", "Dothideomycetes" = "#CC6677",
                    "Pezizomycetes" = "#D55E00", "Sordariomycetes" = "#117733",
                    "unidentified" = "#6699CC", "Tremellomycetes" = "#6948b8") 
 
-scales::show_col(class_palette)
-
-
-levels(as.factor(as.data.frame(tax_table(drt.fungi.late.clr))$Class))
-
-
 # Functions
 # Function to return metadata df from phyloseq object
 pssd2veg <- function(physeq) {
@@ -260,7 +254,10 @@ RF_CM_SoilInoculum  <- readRDS("Intermediate_data/RF_CM_SoilInoculum_CV10_300tre
 RF_CM_Genotype      <- readRDS("Intermediate_data/RF_CM_Genotype_CV10_300trees_rand_split.rds")
 # Confusion Matrix plot for supplement
 a <- RF_CM_Treatment$CMatrixPLOT
-b <- RF_CM_SoilInoculum$CMatrixPLOT
+b <- RF_CM_SoilInoculum$CMatrixPLOT 
+# fix labels for soil inoculum
+b <- b + scale_x_discrete(name = "Reference", labels = c(expression(TLI[P]), expression(TLI[Ag]), expression(SVR[P]), expression(SVR[Ag]), expression(KNZ[P]), expression(HAY[P])))
+b <- b + scale_y_discrete(name = "Prediction", labels = c(expression(HAY[P]), expression(KNZ[P]),  expression(SVR[Ag]), expression(SVR[P]), expression(TLI[Ag]), expression(TLI[P])))
 c <- RF_CM_Genotype$CMatrixPLOT
 CM_PLOT <- ggarrange(b,c, nrow = 1, align = "hv", common.legend = TRUE, legend = 'right', labels = "AUTO")
 ggsave("figures/Confusion_matrix_plots.svg", CM_PLOT, width = 8, height = 4)

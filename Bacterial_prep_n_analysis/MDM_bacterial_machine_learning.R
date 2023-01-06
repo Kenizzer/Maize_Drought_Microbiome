@@ -33,13 +33,11 @@ library("matrixStats"); packageVersion("matrixStats")
 
 # Theme set and Color Palettes
 theme_set(theme_pubr())
-phyla_palette <- c("Actinobacteria" = "#88CCEE", "Armatimonadetes"= "#CC6677",
-                             "Bacteroidetes" = "#DDCC77",  "Chloroflexi" = "#AA4499",
-                             "Firmicutes" = "#999933", "Gemmatimonadetes" = "#44AA99",
-                             "Nitrospirae" = "#D55E00", "Proteobacteria" = "#117733",
-                             "Planctomycetes" =  "#6699CC", "Verrucomicrobia" = "#882255",
-                             "Deinococcus-Thermus" = "#000000", "Thaumarchaeota" = "#6948b8", 
-                             "Other" = "#888888" )
+phyla_palette <- c("Actinobacteria" = "#D55E00", 
+                   "Bacteroidetes" = "#999933",
+                   "Gemmatimonadetes" = "#CC6677",
+                   "Nitrospirae" = "#51C14B", 
+                   "Proteobacteria" = "#15632c") # reduced so all do not print on important ASV charts
 
 # Functions
 # Function to return metadata df from phyloseq object
@@ -248,6 +246,9 @@ RF_CM_Genotype      <- readRDS("Intermediate_data/RF_CM_Genotype_CV10_300trees_r
 # Confusion Matrix plot for supplement
 a <- RF_CM_Treatment$CMatrixPLOT
 b <- RF_CM_SoilInoculum$CMatrixPLOT
+# fix labels for soil inoculum
+b <- b + scale_x_discrete(name = "Reference", labels = c(expression(TLI[P]), expression(TLI[Ag]), expression(SVR[P]), expression(SVR[Ag]), expression(KNZ[P]), expression(HAY[P])))
+b <- b + scale_y_discrete(name = "Prediction", labels = c(expression(HAY[P]), expression(KNZ[P]),  expression(SVR[Ag]), expression(SVR[P]), expression(TLI[Ag]), expression(TLI[P])))
 c <- RF_CM_Genotype$CMatrixPLOT
 CM_PLOT <- ggarrange(b,c, align = "hv", common.legend = TRUE, nrow = 1, legend = 'right', labels = "AUTO")
 ggsave("figures/Confusion_matrix_plots.svg", CM_PLOT, width = 8, height = 4)
@@ -317,15 +318,15 @@ b <- ggplot(RF_list_soil_inoculum[RF_list_soil_inoculum$mean > 0.001, ], aes(x= 
   geom_errorbar(aes(xmin=mean - SD/sqrt(length(mean)), xmax=mean + SD/sqrt(length(mean))), width=.2) +
   xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
 
-c <- ggplot(RF_list_genotype[RF_list_genotype$mean > 0.0005, ], aes(x= mean, y = reorder(ASV_numb, mean), fill = Phylum)) +
+c <- ggplot(RF_list_genotype[RF_list_genotype$mean > 0.001, ], aes(x= mean, y = reorder(ASV_numb, mean), fill = Phylum)) +
   geom_col() +
   scale_fill_manual(values = phyla_palette) +
   geom_errorbar(aes(xmin=mean - SD/sqrt(length(mean)), xmax=mean + SD/sqrt(length(mean))), width=.2) +
   xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
 
 # Combination plot
-ggarrange(a,b,c, common.legend = TRUE, labels = c("Treatment","Soil Inoculum", "Genotype"), align = "hv", label.y = 1, legend = "right")
-ASVs_deciding_ML <- ggarrange(a,b,c, common.legend = TRUE, labels = c("AUTO"), nrow = 1, align = "hv", label.y = 1, legend = "right")
+ggarrange(a,b,c, common.legend = TRUE, labels = c("Treatment","Soil Inoculum", "Genotype"), align = "hv", legend = "right")
+ASVs_deciding_ML <- ggarrange(a,b,c, nrow = 1, common.legend = TRUE, labels = c("AUTO"), align = "hv", legend = "right")
 
 ggsave("figures/Important_ASV_by_factor.svg", ASVs_deciding_ML, width =12, height = 6)
 ggsave("figures/Important_ASV_by_factor.png", ASVs_deciding_ML, width =12, height = 6)
