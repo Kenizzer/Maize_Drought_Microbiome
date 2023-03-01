@@ -206,15 +206,21 @@ total_var_p_sig
 #### Taxonomic barplots ####
 # Use non-transformed data for relative abundance taxonomic barplots
 drt.bact.late_phylum <- phyloseq::tax_glom(drt.bact.late, "Phylum") # 13 taxa
+drt.bact.late_class <- phyloseq::tax_glom(drt.bact.late, "Class") # 21 taxa
 # Make relative abundance AKA transform sample counts by diving by the ASV total.
 drt.bact.late_phylum_relab <- transform_sample_counts(drt.bact.late_phylum, function(x) x/sum(x))
+drt.bact.late_class_relab <- transform_sample_counts(drt.bact.late_class, function(x) x/sum(x))
 # Take only the n number of taxa per taxonomic rank based on relative abundance.
 # Taxa >n will be added to a other label.
 drt.bact.late_phylum_relab_top10 <- fantaxtic::get_top_taxa(physeq_obj = drt.bact.late_phylum_relab, n = 10, relative = TRUE, discard_other = FALSE, other_label = "Other")
+drt.bact.late_class_relab_top10 <- fantaxtic::get_top_taxa(physeq_obj = drt.bact.late_class_relab, n = 10, relative = TRUE, discard_other = FALSE, other_label = "Other")
 # Melt data frame with phyloseq function for plotting.
 phylum_top10 <- psmelt(drt.bact.late_phylum_relab_top10)
+class_top10 <- psmelt(drt.bact.late_class_relab_top10)
 # Reorder levels to put other to the end, otherwise taxa are in alphabetical order.
 phylum_top10$Phylum <- forcats::fct_relevel(as.factor(phylum_top10$Phylum), "Other", after = Inf)
+class_top10$Class <- forcats::fct_relevel(as.factor(class_top10$Class), "Other", after = Inf)
+
 # Stats on relative abundance
 mean((phylum_top10[phylum_top10$Phylum == "Actinobacteria",]$Abundance)*100)    #13.13%
 mean((phylum_top10[phylum_top10$Phylum == "Armatimonadetes",]$Abundance)*100)   #0.008%
@@ -578,7 +584,17 @@ a <- ggplot(class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Phylum)) 
   ylab("Relative abundance") +
   xlab("sample") +
   facet_wrap(~Drought.or.Watered, scale = "free", nrow = 2) +
-  scale_fill_manual(values=phyla_palette_MOD) + guides(fill=guide_legend(nrow=5, byrow=TRUE))+
+  scale_fill_manual(values=phyla_palette_MOD, labels = c("Actinomycetota", 
+                                                         "Bacteroidota",
+                                                         "Bacillota",
+                                                         "Gemmatimonadota",
+                                                         "Alphaproteobacteria",
+                                                         "Betaproteobacteria",
+                                                         "Deltaproteobacteria",
+                                                         "Gammaproteobacteria",
+                                                         "Verrucomicrobiota",
+                                                         "Other")) +
+  guides(fill=guide_legend(nrow=5, byrow=TRUE)) +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),

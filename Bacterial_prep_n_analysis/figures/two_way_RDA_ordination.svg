@@ -456,24 +456,24 @@
 <text x='745.57' y='24.03' style='font-size: 9.60px; font-family: "Arial";' textLength='9.05px' lengthAdjust='spacingAndGlyphs'>W</text>
 <rect x='772.95' y='5.98' width='367.34' height='46.52' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
 <text x='778.92' y='33.53' style='font-size: 12.00px; font-family: "Arial";' textLength='72.04px' lengthAdjust='spacingAndGlyphs'>Soil Inoculum</text>
-<circle cx='865.57' cy='20.60' r='1.95' style='stroke-width: 0.71; stroke: #780C72; fill: #780C72;' />
-<circle cx='865.57' cy='20.60' r='3.56' style='stroke-width: 0.71; stroke: #780C72; fill: #780C72;' />
-<circle cx='865.57' cy='37.88' r='1.95' style='stroke-width: 0.71; stroke: #DE3A68; fill: #DE3A68;' />
-<circle cx='865.57' cy='37.88' r='3.56' style='stroke-width: 0.71; stroke: #DE3A68; fill: #DE3A68;' />
-<circle cx='968.86' cy='20.60' r='1.95' style='stroke-width: 0.71; stroke: #F5805D; fill: #F5805D;' />
-<circle cx='968.86' cy='20.60' r='3.56' style='stroke-width: 0.71; stroke: #F5805D; fill: #F5805D;' />
-<circle cx='968.86' cy='37.88' r='1.95' style='stroke-width: 0.71; stroke: #FFE785; fill: #FFE785;' />
-<circle cx='968.86' cy='37.88' r='3.56' style='stroke-width: 0.71; stroke: #FFE785; fill: #FFE785;' />
-<circle cx='1066.05' cy='20.60' r='1.95' style='stroke-width: 0.71; stroke: #7FD66F; fill: #7FD66F;' />
-<circle cx='1066.05' cy='20.60' r='3.56' style='stroke-width: 0.71; stroke: #7FD66F; fill: #7FD66F;' />
-<circle cx='1066.05' cy='37.88' r='1.95' style='stroke-width: 0.71; stroke: #3BA150; fill: #3BA150;' />
-<circle cx='1066.05' cy='37.88' r='3.56' style='stroke-width: 0.71; stroke: #3BA150; fill: #3BA150;' />
-<text x='880.18' y='24.03' style='font-size: 9.60px; font-family: "Arial";' textLength='70.90px' lengthAdjust='spacingAndGlyphs'>SVR_Agriculture</text>
-<text x='880.18' y='41.31' style='font-size: 9.60px; font-family: "Arial";' textLength='52.24px' lengthAdjust='spacingAndGlyphs'>SVR_Native</text>
-<text x='983.48' y='24.03' style='font-size: 9.60px; font-family: "Arial";' textLength='51.52px' lengthAdjust='spacingAndGlyphs'>HAY_Native</text>
-<text x='983.48' y='41.31' style='font-size: 9.60px; font-family: "Arial";' textLength='65.04px' lengthAdjust='spacingAndGlyphs'>TLI_Agriculture</text>
-<text x='1080.66' y='24.03' style='font-size: 9.60px; font-family: "Arial";' textLength='46.38px' lengthAdjust='spacingAndGlyphs'>TLI_Native</text>
-<text x='1080.66' y='41.31' style='font-size: 9.60px; font-family: "Arial";' textLength='51.70px' lengthAdjust='spacingAndGlyphs'>KNZ_Native</text>
+<circle cx='865.57' cy='20.60' r='1.95' style='stroke-width: 0.71; stroke: #F5805D; fill: #F5805D;' />
+<circle cx='865.57' cy='20.60' r='3.56' style='stroke-width: 0.71; stroke: #F5805D; fill: #F5805D;' />
+<circle cx='865.57' cy='37.88' r='1.95' style='stroke-width: 0.71; stroke: #3BA150; fill: #3BA150;' />
+<circle cx='865.57' cy='37.88' r='3.56' style='stroke-width: 0.71; stroke: #3BA150; fill: #3BA150;' />
+<circle cx='948.45' cy='20.60' r='1.95' style='stroke-width: 0.71; stroke: #780C72; fill: #780C72;' />
+<circle cx='948.45' cy='20.60' r='3.56' style='stroke-width: 0.71; stroke: #780C72; fill: #780C72;' />
+<circle cx='948.45' cy='37.88' r='1.95' style='stroke-width: 0.71; stroke: #DE3A68; fill: #DE3A68;' />
+<circle cx='948.45' cy='37.88' r='3.56' style='stroke-width: 0.71; stroke: #DE3A68; fill: #DE3A68;' />
+<circle cx='1051.75' cy='20.60' r='1.95' style='stroke-width: 0.71; stroke: #FFE785; fill: #FFE785;' />
+<circle cx='1051.75' cy='20.60' r='3.56' style='stroke-width: 0.71; stroke: #FFE785; fill: #FFE785;' />
+<circle cx='1051.75' cy='37.88' r='1.95' style='stroke-width: 0.71; stroke: #7FD66F; fill: #7FD66F;' />
+<circle cx='1051.75' cy='37.88' r='3.56' style='stroke-width: 0.71; stroke: #7FD66F; fill: #7FD66F;' />
+<text x='880.18' y='24.03' style='font-size: 9.60px; font-family: "Arial";' textLength='51.52px' lengthAdjust='spacingAndGlyphs'>HAY_Native</text>
+<text x='880.18' y='41.31' style='font-size: 9.60px; font-family: "Arial";' textLength='51.70px' lengthAdjust='spacingAndGlyphs'>KNZ_Native</text>
+<text x='963.07' y='24.03' style='font-size: 9.60px; font-family: "Arial";' textLength='70.90px' lengthAdjust='spacingAndGlyphs'>SVR_Agriculture</text>
+<text x='963.07' y='41.31' style='font-size: 9.60px; font-family: "Arial";' textLength='52.24px' lengthAdjust='spacingAndGlyphs'>SVR_Native</text>
+<text x='1066.36' y='24.03' style='font-size: 9.60px; font-family: "Arial";' textLength='65.04px' lengthAdjust='spacingAndGlyphs'>TLI_Agriculture</text>
+<text x='1066.36' y='41.31' style='font-size: 9.60px; font-family: "Arial";' textLength='46.38px' lengthAdjust='spacingAndGlyphs'>TLI_Native</text>
 <text x='5.05' y='15.03' style='font-size: 14.00px; font-weight: bold; font-family: "Arial";' textLength='10.11px' lengthAdjust='spacingAndGlyphs'>A</text>
 </g>
 </svg>

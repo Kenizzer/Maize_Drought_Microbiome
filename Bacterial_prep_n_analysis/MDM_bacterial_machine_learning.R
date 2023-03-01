@@ -308,7 +308,7 @@ RF_list_genotype$ASV_numb <- paste("ASV", rownames(RF_list_genotype))
 # Subplots for each main effect
 a <- ggplot(RF_list_treatment[RF_list_treatment$mean > 0.001, ], aes(x= mean, y = reorder(ASV_numb, mean), fill = Phylum)) +
   geom_col() +
-  scale_fill_manual(values = phyla_palette) +
+  scale_fill_manual(values = phyla_palette, labels = c("Actinomycetota", "Bacteroidota", "Gemmatimonadota", "Pseudomonadota")) +
   geom_errorbar(aes(xmin=mean - SD/sqrt(length(mean)), xmax=mean + SD/sqrt(length(mean))), width=.2) +
   xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
 
