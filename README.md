@@ -9,7 +9,7 @@ Table of markers used within the study.
 | Marker   | F Primer| F Primer Sequence       | R Primer| R Primer Sequence    | Size (bp) | Citation                                       |
 |:--------:|:-------:|:-----------------------:|:-------:|:--------------------:|:---------:|:----------------------------------------------:|
 | 16S      | 515F    | GTGYCAGCMGCCGCGGTAA     | 806R    | GGACTACNVGGGTWTCTAAT | 390       | Parada *et al.* 2016 and Apprill *et al.* 2015 |
-| ITS      | ITS1f   | CTTGGTCATTTAGAGGAAGTAA  | ITS2    | GCTGCGTTCTTCATCGATGC | variable       | Smith and Peay 2014                       |
+| ITS      | ITS1f   | CTTGGTCATTTAGAGGAAGTAA  | ITS2    | GCTGCGTTCTTCATCGATGC | variable  | Smith and Peay 2014                            |
 
 
 ## Experimental Design
@@ -27,7 +27,11 @@ Table of markers used within the study.
 
 ## Soil and inocula processing and analysis
 
-Coming Soon!
+[***See Soil_inocula_prep_n_analysis folder***](https://github.com/Kenizzer/Maize_Drought_Microbiome/tree/main/Soil_inocula_prep_n_analysis)
+
+- Bacterial soil and inocula sequences were processed, filtered, and CLR transformed in [***MDM_soil_inocula_bacterial_dataprep.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Soil_inocula_prep_n_analysis/MDM_soil_inocula_bacterial_dataprep.R).
+- Fungal soil and inocula sequences were processed, filtered, and CLR transformed in [***MDM_soil_inocula_fungal_dataprep.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Soil_inocula_prep_n_analysis/MDM_soil_inocula_fungal_dataprep.R).
+- Main soil and inocula analysis was conducted in [***MDM_soil_inocula_analysis.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Soil_inocula_prep_n_analysis/MDM_soil_inocula_analysis.R).
 
 ## Bacterial processing and analysis
 
