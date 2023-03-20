@@ -140,8 +140,11 @@ row.names(smd.bact) <- smd.bact$SampleID
 sample_data(drt.bact) <- smd.bact
 
 ####### Get list of ASVs for Venn diagram ########
-ASV_sequences.vec <- colnames(otu_table(drt.bact)) 
-write.csv(ASV_sequences.vec, "Intermediate_data/ASV_list_for_venn_diagram_16S.csv")
+soil_asvs.vec <- colnames(otu_table(prune_taxa(taxa_sums(subset_samples(drt.bact, Type=="Soil")) > 1, subset_samples(drt.bact, Type=="Soil"))))
+inoc_asvs.vec <- colnames(otu_table(prune_taxa(taxa_sums(subset_samples(drt.bact, Type=="Inocula")) > 1, subset_samples(drt.bact, Type=="Inocula"))))
+
+write.csv(soil_asvs.vec, "Intermediate_data/ASV_list_for_venn_diagram_soil_16S.csv")
+write.csv(inoc_asvs.vec, "Intermediate_data/ASV_list_for_venn_diagram_inoc_16S.csv")
 
 ####### Relabel ASVs for convenience #######
 tax <- as(tax_table(drt.bact),'matrix')
