@@ -614,8 +614,8 @@ c <- readRDS("./Intermediate_data/RF_CM_Treatment_CV10_300trees_rand_split.rds")
 c <- c$CMatrixPLOT
 part <- ggarrange(b,c, ncol = 1, heights = c(1,0.85), align = 'v', labels = c("B","C"))
 fig3_abc <- ggarrange(a,part, ncol = 2, widths = c(1,0.75), labels = c("A"))
-ggsave("figures/figure3_panels_abc.svg", fig3_abc, height = 6, width = 10)
-ggsave("figures/figure3_panels_abc.png", fig3_abc, height = 6, width = 10)
+ggsave("figures/figure4_panels_abc.svg", fig3_abc, height = 6, width = 10)
+ggsave("figures/figure4_panels_abc.png", fig3_abc, height = 6, width = 10)
 
 
 #### Figure S2: RDA by soil inoculum ####

@@ -141,6 +141,10 @@ row.names(smd.fungi) <- smd.fungi$Sample_ID
 # Add back into phyloseq object:
 sample_data(drt.fungi) <- smd.fungi
 
+####### Get list of ASVs for Venn diagram ########
+ASV_sequences.vec <- colnames(otu_table(drt.fungi))
+write.csv(ASV_sequences.vec, "Intermediate_data/ASV_list_for_venn_diagram_ITS.csv")
+
 ####### Relabel ASVs for convenience #######
 tax <- as(tax_table(drt.fungi),'matrix')
 ASV <- as(otu_table(drt.fungi),'matrix')

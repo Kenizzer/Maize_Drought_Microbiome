@@ -233,7 +233,7 @@ P2 <- filter(sampledata_with_long, SoilInoculum %in% c("SVR_Native", "HAY_Native
 
 
 
-Native_only_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'v', legend = 'right', labels = c('D', 'E'))
+Native_only_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'v', legend = 'right', labels = c('B', 'C'))
 
 ggsave("./figures/NATIVE_only_Long_SMR_Genotype.svg", Native_only_smooth, height = 5.3, width = 4)
 ggsave("./figures/NATIVE_only_Long_SMR_Genotype.png", Native_only_smooth, height = 5.3, width = 4)
@@ -294,7 +294,7 @@ SMR.native.mod <- lmerTest::lmer(sqrt(ShootMassRate) ~ MAP*Drought.or.Watered*Ge
 emtrends(SMR.native.mod, ~ Genotype, var = "MAP")
 emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "MAP")
 
-#### Figure 1 panel D: Timeseries of shoot height by treatment ####
+#### Figure removed from manuscript: Timeseries of shoot height by treatment ####
 sampledata$Drought.or.Watered <- as.factor(sampledata$Drought.or.Watered)
 
 # mutate data to correct dim for plotting
@@ -510,6 +510,16 @@ Combo_fig <- ggarrange(part1, part2, nrow = 2)
 ggsave("figures/phenotypic_figure_final.svg", Combo_fig, width = 12, height = 9)
 ggsave("figures/phenotypic_figure_final.png", Combo_fig, width = 12, height = 9)
 
+#### Figure 3 #####
+part1
+ggsave("figures/figure3_phenotypic_treatment.svg", part1, width = 10, height = 5)
+ggsave("figures/figure3_phenotypic_treatment.png", part1, width = 10, height = 5)
+
+#### Figure S6 #####
+part2 <- ggarrange(d,e,f, align = "hv", common.legend = TRUE, legend = 'right',labels = "AUTO", nrow=1)
+part2
+ggsave("figures/figureS6_phenotypic_genotype.svg", part2, width = 10, height = 5)
+ggsave("figures/figureS6_phenotypic_genotype.png", part2, width = 10, height = 5)
 
 # Posthocs
 # Drought main effects 
@@ -664,7 +674,8 @@ soil_merged_pallete_w_control <- c("Control_Control" = "#FFFFFF","SVR_Agricultur
                         "TLI_Agriculture" = "#ffe785", "TLI_Native" = "#7fd66f", "KNZ_Native" = "#3ba150") 
 
 
-# Both plots together FACET Maybe figure 4
+#### Figure 6 ####
+# Both plots together FACET 
 # ShootMassRate
 a <- ggplot(sampledata_w_controls_germinants, aes(x = SoilInoculum, y = ShootMassRate, fill = SoilInoculum)) +
   geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
@@ -708,15 +719,19 @@ c <- ggplot(sampledata_w_controls_germinants, aes(x = SoilInoculum, y = RootShoo
   theme(legend.text.align = 0, axis.title.x=element_blank()) +
   facet_wrap(~Drought.or.Watered) + ylim(0,12) # This removes 4 points, noted in legend
 
-# combine
-Controls_phenotypic_responses <- ggarrange(a,b,c, common.legend = TRUE, labels = "AUTO", legend = "right", nrow = 3, align = "v")
 # add line plots
-Controls_phenotypic_responses_with_line_plot <- ggarrange(Controls_phenotypic_responses, Native_only_smooth, ncol = 2, widths = c(1, 0.4))
+Controls_phenotypic_responses_with_line_plot <- ggarrange(a, Native_only_smooth, ncol = 2, widths = c(1, 0.4), legend = 'right', labels = "AUTO")
 # save
-ggsave("figures/Controls_phenotypic_responses_facet_lineplots.svg", Controls_phenotypic_responses_with_line_plot, height = 8, width = 14)
-ggsave("figures/Controls_phenotypic_responses_facet_lineplots.png", Controls_phenotypic_responses_with_line_plot,  height = 8, width = 14)
+ggsave("figures/Figure6_Controls_phenotypic_responses_facet_lineplots.svg", Controls_phenotypic_responses_with_line_plot, height = 8, width = 14)
+ggsave("figures/Figure6_Controls_phenotypic_responses_facet_lineplots.png", Controls_phenotypic_responses_with_line_plot,  height = 8, width = 14)
 
-
+#### Figure S15 ####
+b
+c
+RMR_RSR_plot <- ggarrange(b,c, nrow = 2, common.legend = TRUE, labels = "AUTO", align = 'hv', legend = "right")
+# save
+ggsave("figures/FigureS15_Controls_phenotypic_responses_RMR_RSR.svg", RMR_RSR_plot, height = 8, width = 10)
+ggsave("figures/FigureS15_Controls_phenotypic_responses_RMR_RSR.png", RMR_RSR_plot,  height = 8, width = 10)
 
 #Seperate plots for D vs WW
 

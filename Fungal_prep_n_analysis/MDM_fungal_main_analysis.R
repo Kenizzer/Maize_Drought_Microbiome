@@ -492,7 +492,7 @@ SoilInoculum.glm.test[12,]
 #fASV_12 "Fungi" "Ascomycota" "Eurotiomycetes" "Eurotiales" "Aspergillaceae" "Penicillium" "Penicillium_raperi"
 
 
-#### Figure 3 panels D,E,F #####
+#### Figure 5 panels A,B,C #####
 # reorder the class dataframe in order to samples in order of the largest class
 Class_top10_ordered <- class_top10[order(class_top10$Sample),]
 # get a vector that will tell which samples have the highest abundance of Eurotiomycetes
@@ -500,7 +500,7 @@ Class_top10_ordered$plot_order <- rep(rank(-Class_top10_ordered$Abundance[Class_
 Class_top10_ordered$plot_order <- factor(Class_top10_ordered$plot_order)
 Class_top10_ordered$Class <- factor(Class_top10_ordered$Class, levels = c("Eurotiomycetes", "Dothideomycetes", "Leotiomycetes", "Malasseziomycetes", "Microbotryomycetes", "Mortierellomycetes", "Pezizomycetes", "Sordariomycetes", "unidentified", "Other"))
 
-d<- ggplot(Class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Class)) +
+a <- ggplot(Class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   ylab("Relative abundance") +
   xlab("sample") +
@@ -518,22 +518,22 @@ d<- ggplot(Class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Class)) +
 drt.fungi.dbRDA <- ordinate(drt.fungi.late.clr, distance = 'euclidean', method = 'RDA', formula=~Drought.or.Watered+Condition(Plate + logObs))
 anova.cca(drt.fungi.dbRDA)
 #Color and shape of plotted points by soil habitat
-e <- plot_ordination(drt.fungi.late.clr,drt.fungi.dbRDA,color = 'Drought.or.Watered') + geom_point(size=3) + scale_color_manual(values = treatment_pallete, name = "Treatment")
-e <- e + annotate("text", x = 3, y = 5, label = "Treatment p = 0.18", fontface = 'italic')
+b <- plot_ordination(drt.fungi.late.clr,drt.fungi.dbRDA,color = 'Drought.or.Watered') + geom_point(size=3) + scale_color_manual(values = treatment_pallete, name = "Treatment")
+b <- b + annotate("text", x = 3, y = 5, label = "Treatment p = 0.18", fontface = 'italic')
 
 
 
 # Random forest prediction for treatment
-f <- readRDS("./Intermediate_data/RF_CM_Treatment_CV10_300trees_rand_split.rds")
-f <- f$CMatrixPLOT
+c <- readRDS("./Intermediate_data/RF_CM_Treatment_CV10_300trees_rand_split.rds")
+c <- c$CMatrixPLOT
 
 
-part <- ggarrange(e,f, ncol = 1, heights = c(1,0.85), labels = c("E","F"))
+part <- ggarrange(b,c, ncol = 1, heights = c(1,0.85), labels = c("B","C"))
 
-fig3_def <- ggarrange(d,part, ncol = 2, widths = c(1,0.75), labels = c("D"))
+fig3_def <- ggarrange(a ,part, ncol = 2, widths = c(1,0.75), labels = c("A"))
 
-ggsave("figures/figure3_panels_def.svg", fig3_def, height = 6, width = 10)
-ggsave("figures/figure3_panels_def.png", fig3_def, height = 6, width = 10)
+ggsave("figures/figure5_panels_abc.svg", fig3_def, height = 6, width = 10)
+ggsave("figures/figure5_panels_abc.png", fig3_def, height = 6, width = 10)
 
 
 # by soil inoculum, was cut from the figure above will now be a supplement
