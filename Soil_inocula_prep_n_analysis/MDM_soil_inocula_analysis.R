@@ -34,7 +34,7 @@ hmep.fungi.clr <- readRDS('./Intermediate_data/phyloseq_f_clean_soil_inocula_clr
 #bacteria
 sample_data(hmep.bact.clr)$SoilSource <- factor(sample_data(hmep.bact.clr)$SoilSource, levels = c("SVR_Agriculture", "SVR_Native", "HAY_Native", "TLI_Agriculture", "TLI_Native", "KNZ_Native"))
 #Ordinate (constrained PCOA)
-RDA.ait.hmep.bact.clr <- ordinate(hmep.bact.clr, method='RDA',distance='euclidean',formula=~SoilSource+Type)
+RDA.ait.hmep.bact.clr <- ordinate(hmep.bact.clr, method='RDA',distance='euclidean',formula=~SoilSource + Type + Condition(logObs))
 #Color by Type (soil vs. inocula)
 RDA_16S <- plot_ordination(hmep.bact.clr, RDA.ait.hmep.bact.clr)
 RDA_16S[["layers"]][[1]][["geom"]][["default_aes"]][["colour"]] <- 'white'
@@ -48,7 +48,7 @@ RDA_16S <- RDA_16S +
 #fungi
 sample_data(hmep.fungi.clr)$SoilSource <- factor(sample_data(hmep.fungi.clr)$SoilSource, levels = c("SVR_Agriculture", "SVR_Native", "HAY_Native", "TLI_Agriculture", "TLI_Native", "KNZ_Native"))
 #Ordinate 
-RDA.ait.hmep.fungi.clr <- ordinate(hmep.fungi.clr, method = "RDA", distance = "euclidean", formula=~SoilSource+Type)
+RDA.ait.hmep.fungi.clr <- ordinate(hmep.fungi.clr, method = "RDA", distance = "euclidean", formula=~SoilSource + Type + Condition(logObs))
 #Color 
 RDA_ITS <- plot_ordination(hmep.fungi.clr, RDA.ait.hmep.fungi.clr)
 RDA_ITS[["layers"]][[1]][["geom"]][["default_aes"]][["colour"]] <- 'white'
@@ -343,6 +343,10 @@ perm_16S
 #  Type        1    44584 0.10036 7.9298  0.001 ***
 #  Residual   53   297985 0.67078                  
 #  Total      59   444234 1.00000 
+bact.dbRDA <- ordinate(hmep.bact.clr, distance = 'euclidean', method = 'RDA', formula=~SoilSource + Type + Condition(logObs))
+bact.dbRDA
+anova.cca(bact.dbRDA)
+
 
 ## Fungi
 set.seed(77764413)
@@ -355,3 +359,5 @@ perm_ITS
 #  Type        1    32134 0.06968 8.0515  0.001 ***
 #  Residual   82   327269 0.70967                  
 #  Total      88   461157 1.00000
+drt.bact.dbRDA <- ordinate(drt.bact.late.clr, distance = 'euclidean', method = 'RDA', formula=~SoilInoculum+Condition(Plate + logObs))
+summary(drt.bact.dbRDA)
