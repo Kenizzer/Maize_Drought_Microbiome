@@ -211,6 +211,13 @@ anova(lmerTest::lmer(log(RootShootRatio) ~ LONG*Drought.or.Watered*Genotype + (1
 SMR.native.mod <- lmerTest::lmer(sqrt(ShootMassRate) ~ LONG*Drought.or.Watered*Genotype + (1|Block), data = filter(sampledata_with_long, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")))
 emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "LONG")
 emtrends(SMR.native.mod, ~ Genotype, var = "LONG")
+
+# Get non-transformed slopes for easier interpretation of results.
+SMR.native.mod.non.transformed <- lmerTest::lmer(ShootMassRate ~ LONG*Drought.or.Watered*Genotype + (1|Block), data = filter(sampledata_with_long, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")))
+emtrends(SMR.native.mod.non.transformed, ~ Drought.or.Watered, var = "LONG")
+emtrends(SMR.native.mod.non.transformed, ~ Genotype, var = "LONG")
+
+
 # Both long interactions with genotype and treatment are significant
 # PLOT them
 P1 <- filter(sampledata_with_long, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")) %>%
@@ -218,8 +225,8 @@ P1 <- filter(sampledata_with_long, SoilInoculum %in% c("SVR_Native", "HAY_Native
   geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
   scale_color_manual(name = "Treatment" , values = treatment_pallete) +
   ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
-  ylim(0.000, 0.022) + annotate("text", x = -98, y=0.022, label = "W = -0.0016", fontface = 'italic') +
-  annotate("text", x = -98, y=0.020, label = "D = 0.0006", fontface = 'italic') +
+  ylim(0.000, 0.022) + annotate("text", x = -98, y=0.022, label = "W = -3.29 e-4", fontface = 'italic') +
+  annotate("text", x = -98, y=0.020, label = "D = 3.04 e-5", fontface = 'italic') +
   annotate("text", x = -98, y=0.018, label = "Long×DT p = 0.03", fontface = 'italic')
 
 P2 <- filter(sampledata_with_long, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")) %>%
@@ -227,8 +234,8 @@ P2 <- filter(sampledata_with_long, SoilInoculum %in% c("SVR_Native", "HAY_Native
   geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
   scale_color_manual(name = "Genotype" , values = genotype_pallete) +
   ylab("Shoot Mass Rate (g/day)") + xlab("Longitude (Lower MAP to Higher MAP)") +
-  ylim(0.000, 0.022) + annotate("text", x = -98, y=0.022, label = "B73 = -0.0016", fontface = 'italic') +
-  annotate("text", x = -98, y=0.020, label = "Mo17 = 0.0005", fontface = 'italic') +
+  ylim(0.000, 0.022) + annotate("text", x = -98, y=0.022, label = "B73 = -3.07 e-4", fontface = 'italic') +
+  annotate("text", x = -98, y=0.020, label = "Mo17 = 9.12 e-6", fontface = 'italic') +
   annotate("text", x = -98, y=0.018, label = "Long×G p = 0.03", fontface = 'italic') 
 
 

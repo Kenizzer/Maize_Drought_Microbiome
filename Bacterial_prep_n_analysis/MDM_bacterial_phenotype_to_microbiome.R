@@ -156,6 +156,7 @@ emtrends(mod, ~Drought.or.Watered, var = "Abundance")
 
 Cory_interaction_plot <- filter(drt.bact.late.clr_fam, Family == "Corynebacteriaceae") %>%
   ggplot(aes(x = Abundance, y = ShootMassRateResid, color = Drought.or.Watered)) +
+  xlab("CLR Transformed Abundance") +
   geom_point() +
   geom_smooth(method = "lm") +
   scale_color_manual(name = "Treatment", values = treatment_pallete) +
@@ -176,6 +177,7 @@ emtrends(mod, ~Drought.or.Watered, var = "Abundance")
 
 Strep_interaction_plot <- filter(drt.bact.late.clr_fam, Family == "Streptococcaceae") %>%
   ggplot(aes(x = Abundance, y = ShootMassRateResid, color = Drought.or.Watered)) +
+  xlab("CLR Transformed Abundance") +
   geom_point() +
   geom_smooth(method = "lm") +
   scale_color_manual(name = "Treatment", values = treatment_pallete) +
