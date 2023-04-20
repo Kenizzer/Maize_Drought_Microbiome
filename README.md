@@ -1,8 +1,11 @@
 # Maize Drought Microbiome
 
-## Abridged abstract
+## bioRxiv Preprint
+<https://doi.org/10.1101/2023.04.11.536405>
 
-Coming soon!
+## Abstract
+
+As the climate changes, plants and their associated microbiomes face greater water limitation and increased frequency of drought. Historical precipitation patterns can leave a legacy effect on soil and root-associated microbiomes, but the impact of this conditioning on future drought performance is poorly understood. Moreover, agricultural practices, like tilling and fertilization, may override precipitation legacies in natural systems. Precipitation gradients provide a means to assess these legacy effects. We collected six soil microbiomes across a Kansas precipitation gradient from both agricultural fields and native prairies. Seedlings of two *Zea mays* genotypes were inoculated with each soil microbiome in a factorial drought experiment. Droughted plants exhibited decreased shoot mass accumulation rates and greater root mass relative to shoot mass. Restructuring of the bacterial root-associated microbiome was apparent, with depletion observed in Pseudomonadota and enrichment in Actinomycetota, while the fungal microbiome was largely unaffected by drought. A historical precipitation legacy effect on soil microbiomes interacted with plants during drought treatment, but only among prairie soils. Prairie soils from historically wetter locations increased maize shoot biomass under drought more so than agricultural or historically drier prairie soils. We demonstrate links between legacy effects and drought performance, suggesting that future drying climates may condition soils to negatively impact plant performance.
 
 Table of markers used within the study.
 
