@@ -191,7 +191,7 @@ P1 <- filter(sampledata_with_MAP, SoilInoculum %in% c("SVR_Native", "HAY_Native"
   ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
   ylim(0.000, 0.022) + annotate("text", x = 775, y= 0.022, label = "W = -2.88 e-6", fontface = 'italic') +
   annotate("text", x = 775, y= 0.020, label = "D =  4.53 e-7", fontface = 'italic') +
-  annotate("text", x = 775, y= 0.018, label = "Long×DT p = 0.04", fontface = 'italic')
+  annotate("text", x = 775, y= 0.018, label = "MAP×DT p = 0.04", fontface = 'italic')
 
 P2 <- filter(sampledata_with_MAP, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")) %>%
   ggplot(aes(x = MAP, y = ShootMassRate, color = Genotype)) +
@@ -200,7 +200,7 @@ P2 <- filter(sampledata_with_MAP, SoilInoculum %in% c("SVR_Native", "HAY_Native"
   ylab("Shoot Mass Rate (g/day)") + xlab("Normal Annual Precipitation (mm)") +
   ylim(0.000, 0.022) + annotate("text", x = 775, y=0.022, label = "B73 = -2.94 e-6", fontface = 'italic') +
   annotate("text", x = 775, y=0.020, label = "Mo17 = 5.10 e-7", fontface = 'italic') +
-  annotate("text", x = 775, y=0.018, label = "Long×G p = 0.02", fontface = 'italic') 
+  annotate("text", x = 775, y=0.018, label = "MAP×G p = 0.02", fontface = 'italic') 
 
 Native_only_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'v', legend = 'right', labels = c('B', 'C'))
 
@@ -263,8 +263,8 @@ sampledata_with_ARID <- sampledata_germinants %>%
 anova(lmerTest::lmer(sqrt(ShootMassRate) ~ Aridity_index*Drought.or.Watered*Genotype + (1|Block), data = filter(sampledata_with_ARID, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native"))))
 # SMR across just native soils
 SMR.native.mod <- lmerTest::lmer(sqrt(ShootMassRate) ~ Aridity_index*Drought.or.Watered*Genotype + (1|Block), data = filter(sampledata_with_ARID, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")))
-emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "LONG")
-emtrends(SMR.native.mod, ~ Genotype, var = "LONG")
+emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "Aridity_index")
+emtrends(SMR.native.mod, ~ Genotype, var = "Aridity_index")
 # Get non-transformed slopes for easier interpretation of results.
 SMR.native.mod.non.transformed <- lmerTest::lmer(ShootMassRate ~ Aridity_index*Drought.or.Watered*Genotype + (1|Block), data = filter(sampledata_with_ARID, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")))
 emtrends(SMR.native.mod.non.transformed, ~ Drought.or.Watered, var = "Aridity_index")
@@ -277,7 +277,7 @@ P1 <- filter(sampledata_with_ARID, SoilInoculum %in% c("SVR_Native", "HAY_Native
   ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
   ylim(0.000, 0.022) + annotate("text", x = 0.7, y=0.022, label = "W = -2.51 e-3", fontface = 'italic') +
   annotate("text", x = 0.7, y=0.020, label = "D = 5.44 e-4", fontface = 'italic') +
-  annotate("text", x = 0.7, y=0.018, label = "Long×DT p = 0.06", fontface = 'italic')
+  annotate("text", x = 0.7, y=0.018, label = "Arid×DT p = 0.06", fontface = 'italic')
 P2 <- filter(sampledata_with_ARID, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")) %>%
   ggplot(aes(x = Aridity_index, y = ShootMassRate, color = Genotype)) +
   geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
@@ -285,7 +285,7 @@ P2 <- filter(sampledata_with_ARID, SoilInoculum %in% c("SVR_Native", "HAY_Native
   ylab("Shoot Mass Rate (g/day)") + xlab("Aridity Index") +
   ylim(0.000, 0.022) + annotate("text", x = 0.7, y=0.022, label = "B73 = -2.72 e-3", fontface = 'italic') +
   annotate("text", x = 0.7, y=0.020, label = "Mo17 = 7.49 e-4", fontface = 'italic') +
-  annotate("text", x = 0.7, y=0.018, label = "Long×G p = 0.02", fontface = 'italic') 
+  annotate("text", x = 0.7, y=0.018, label = "Arid×G p = 0.02", fontface = 'italic') 
 # combine
 Arid_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'hv', legend = "none", labels = c('C', 'D'))
 
@@ -317,7 +317,7 @@ P1 <- filter(sampledata_with_soilmoisture, SoilInoculum %in% c("SVR_Native", "HA
   ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
   ylim(0.000, 0.022) + annotate("text", x = 275, y=0.022, label = "W = -1.92 e-6", fontface = 'italic') +
   annotate("text", x = 275, y=0.020, label = "D = 1.11 e-6", fontface = 'italic') +
-  annotate("text", x = 275, y=0.018, label = "Long×DT p = 0.18", fontface = 'italic')
+  annotate("text", x = 275, y=0.018, label = "SM×DT p = 0.18", fontface = 'italic')
 P2 <- filter(sampledata_with_soilmoisture, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")) %>%
   ggplot(aes(x = SoilMoisture, y = ShootMassRate, color = Genotype)) +
   geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
@@ -325,7 +325,7 @@ P2 <- filter(sampledata_with_soilmoisture, SoilInoculum %in% c("SVR_Native", "HA
   ylab("Shoot Mass Rate (g/day)") + xlab("Normal Annual Soil Moisture (mm)") +
   ylim(0.000, 0.022) + annotate("text", x = 275, y=0.022, label = "B73 = -2.82 e-6", fontface = 'italic') +
   annotate("text", x = 275, y=0.020, label = "Mo17 = 2.01 e-6", fontface = 'italic') +
-  annotate("text", x = 275, y=0.018, label = "Long×G p = 0.03", fontface = 'italic') 
+  annotate("text", x = 275, y=0.018, label = "SM×G p = 0.03", fontface = 'italic') 
 # combine
 Soil_moisture_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'hv', legend = "none", labels = c('E', 'F'))
 
@@ -357,7 +357,7 @@ P1 <- filter(sampledata_with_PDSI, SoilInoculum %in% c("SVR_Native", "HAY_Native
   ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
   ylim(0.000, 0.022) + annotate("text", x = 0.7, y=0.022, label = "W = -3.31 e-3", fontface = 'italic') +
   annotate("text", x = 0.7, y=0.020, label = "D = -7.2 e-4", fontface = 'italic') +
-  annotate("text", x = 0.7, y=0.018, label = "Long×DT p = 0.03", fontface = 'italic') +
+  annotate("text", x = 0.7, y=0.018, label = "PDSI×DT p = 0.03", fontface = 'italic') +
   annotate(geom = "point", x = 0.2431771, y = 0.016357143, color = "#de3a68", size = 5, alpha = 0.8) + 
   annotate(geom = "point", x = 0.2431771, y = 0.016357143, color = "#0000FF") + 
   annotate(geom = "text", x = 0.2531771, y = 0.016357143, label = expression(SVR[P]), hjust = "left") +
@@ -377,7 +377,7 @@ P2 <- filter(sampledata_with_PDSI, SoilInoculum %in% c("SVR_Native", "HAY_Native
   ylab("Shoot Mass Rate (g/day)") + xlab("Normal Monthly PDSI") +
   ylim(0.000, 0.022) + annotate("text", x = 0.7, y=0.022, label = "B73 = -2.09 e-3", fontface = 'italic') +
   annotate("text", x = 0.7, y=0.020, label = "Mo17 = -1.94 e-3", fontface = 'italic') +
-  annotate("text", x = 0.7, y=0.018, label = "Long×G p = 0.92", fontface = 'italic')
+  annotate("text", x = 0.7, y=0.018, label = "PDSI×G p = 0.92", fontface = 'italic')
 # combine
 PDSI_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'hv', legend = 'none', labels = c('G', 'H'))
 
