@@ -27,7 +27,7 @@ Table of markers used within the study.
 [***See Phenotypic_analysis folder***](https://github.com/Kenizzer/Maize_Drought_Microbiome/tree/main/Phenotypic_analysis)
 
 - Main analysis was conducted in [***MDM_phenotypic_analysis.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Phenotypic_analysis/MDM_phenotypic_analysis.R).
-- Historical enviromental paramemters were processing in [***TerraClimate_pointdata_analysis.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Phenotypic_analysis/TerraClimate_pointdata_analysis.R).
+- Historical enviromental paramemters were processing in [***TerraClimate_pointdata_analysis.R***](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Phenotypic_analysis/TerraClimate_environmental_parameters/TerraClimate_pointdata_analysis.R).
 
 ## Soil and inocula processing and analysis
 
