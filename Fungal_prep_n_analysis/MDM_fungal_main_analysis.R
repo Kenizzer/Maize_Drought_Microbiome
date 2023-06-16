@@ -78,7 +78,7 @@ rand(drt.fungi.late.InvSimpson) # Plate significant
 pairs(emmeans(drt.fungi.late.Shannon, ~ Drought.or.Watered|SoilInoculum))
 pairs(emmeans(drt.fungi.late.InvSimpson, ~ Drought.or.Watered|SoilInoculum))
 
-#### Examining taxonomy and changes of phyla across factors ####
+#### Examining taxonomy and changes across factors ####
 # Stats of fungal taxonomy (phylum and class) 
 table(phyloseq::tax_table(drt.fungi.late.clr)[, "Phylum"]) #total community
 #Ascomycota     Basidiomycota Mortierellomycota      Mucoromycota      unidentified 
@@ -90,23 +90,26 @@ table(phyloseq::tax_table(drt.fungi.late.clr)[, "Class"]) #total community
 # Mucoromycetes      Pezizomycetes    Sordariomycetes    Tremellomycetes       unidentified 
 # 1                  1                 17                  1                  7 
 
-# Which phyla show largest changes by factors
-drt.fungi.late.clr_phylum <- phyloseq::tax_glom(drt.fungi.late.clr, "Phylum")
-phylum_df <- psmelt(drt.fungi.late.clr_phylum)
-levels(as.factor(phylum_df$Phylum))
-mod.asc <- lmerTest::lmer(filter(phylum_df, Phylum == "Ascomycota")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Ascomycota"))
-mod.bas <- lmerTest::lmer(filter(phylum_df, Phylum == "Basidiomycota")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Basidiomycota"))
-mod.mor <- lmerTest::lmer(filter(phylum_df, Phylum == "Mortierellomycota")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Mortierellomycota"))
-mod.muc <- lmerTest::lmer(filter(phylum_df, Phylum == "Mucoromycota")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Mucoromycota"))
-mod.uni <- lmerTest::lmer(filter(phylum_df, Phylum == "unidentified")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "unidentified"))
-anova(mod.asc)
-anova(mod.bas)
-anova(mod.mor)
-anova(mod.muc)
-anova(mod.uni)
+# Which Genera are impacted by the main effects
+drt.fungi.late.clr_gen <- psmelt(phyloseq::tax_glom(drt.fungi.late.clr, "Genus")) # 84 taxa
+# LMs
+fungi.clr.long.aovs_gen <- drt.fungi.late.clr_gen %>% nest_by(Genus) %>%
+  mutate(mod = list(anova(lmer(Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data=data)))) %>%
+  summarize(broom::tidy(mod))
+# get vector by term for fungal genera, correct pvalues with BH, extract the significant ones
+temp <- which(p.adjust(fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
+fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "Drought.or.Watered", ][c(temp), ]
+temp <- which(p.adjust(fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "SoilInoculum:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
+fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "SoilInoculum:Drought.or.Watered", ][c(temp), ]
+temp <- which(p.adjust(fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "SoilInoculum", ]$p.value, method = "BH") < 0.05)
+fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "SoilInoculum", ][c(temp), ]
+temp <- which(p.adjust(fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "Genotype", ]$p.value, method = "BH") < 0.05)
+fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "Genotype", ][c(temp), ]
 # Conclusion 
-# phyla significant for drought: None
-# phyla significant for inoculum: Ascomycota, Mortierellomycota, Mucoromycota
+# Genera significant for drought: None
+# Genera significant for Interaction (SIxDT): None
+# Genera significant for inoculum: Geomyces, Guehomyces, Mucor, Penicillium, Pseudogymnoascus
+# Genera significant for Genotype: None
 
 
 #### Taxonomic barplots ####

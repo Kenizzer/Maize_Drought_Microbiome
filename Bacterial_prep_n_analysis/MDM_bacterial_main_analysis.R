@@ -77,7 +77,7 @@ rand(drt.bact.late.InvSimpson) # Plate significant
 emmeans(drt.bact.late.z.richness,~Drought.or.Watered)
 pairs(emmeans(drt.bact.late.z.richness,~Drought.or.Watered))
 
-#### Examining taxonomy and changes of phyla across factors ####
+#### Examining taxonomy and changes across factors ####
 #Descriptive stats of bacterial taxonomy (phylum and class)
 table(phyloseq::tax_table(drt.bact.late.clr)[, "Phylum"]) #total community
 #Actinobacteria           Armatimonadetes             Bacteroidetes 
@@ -104,104 +104,57 @@ table(phyloseq::tax_table(drt.bact.late.clr)[, "Class"]) #total community
 #2 
 
 
-# Which phyla show largest changes by factors
-drt.bact.late.clr_phylum <- phyloseq::tax_glom(drt.bact.late.clr, "Phylum")
-phylum_df <- psmelt(drt.bact.late.clr_phylum)
-levels(as.factor(phylum_df$Phylum))
-mod.act <- lmerTest::lmer(filter(phylum_df, Phylum == "Actinobacteria")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Actinobacteria"))
-mod.arm <- lmerTest::lmer(filter(phylum_df, Phylum == "Armatimonadetes")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Armatimonadetes"))
-mod.bac <- lmerTest::lmer(filter(phylum_df, Phylum == "Bacteroidetes")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Bacteroidetes"))
-mod.chl <- lmerTest::lmer(filter(phylum_df, Phylum == "Chloroflexi")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Chloroflexi"))
-mod.cya <- lmerTest::lmer(filter(phylum_df, Phylum == "Cyanobacteria/Chloroplast")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Cyanobacteria/Chloroplast"))
-mod.dei <- lmerTest::lmer(filter(phylum_df, Phylum == "Deinococcus-Thermus")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Deinococcus-Thermus"))
-mod.fir <- lmerTest::lmer(filter(phylum_df, Phylum == "Firmicutes")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Firmicutes"))
-mod.gem <- lmerTest::lmer(filter(phylum_df, Phylum == "Gemmatimonadetes")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Gemmatimonadetes"))
-mod.nit <- lmerTest::lmer(filter(phylum_df, Phylum == "Nitrospirae")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Nitrospirae"))
-mod.pla <- lmerTest::lmer(filter(phylum_df, Phylum == "Planctomycetes")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Planctomycetes"))
-mod.pro <- lmerTest::lmer(filter(phylum_df, Phylum == "Proteobacteria")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Proteobacteria"))
-mod.tha <- lmerTest::lmer(filter(phylum_df, Phylum == "Thaumarchaeota")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Thaumarchaeota"))
-mod.ver <- lmerTest::lmer(filter(phylum_df, Phylum == "Verrucomicrobia")$Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data = filter(phylum_df, Phylum == "Verrucomicrobia"))
+# Which Genera are impacted by the main effects
+drt.bact.late.clr_gen <- psmelt(phyloseq::tax_glom(drt.bact.late.clr, "Genus")) # 84 taxa
+# LMs
+bact.clr.long.aovs_gen <- drt.bact.late.clr_gen %>% nest_by(Genus) %>%
+  mutate(mod = list(anova(lmer(Abundance ~ Genotype + SoilInoculum*Drought.or.Watered + (1|Block) + (1|Plate), data=data)))) %>%
+  summarize(broom::tidy(mod))
+# get vector by term for bacterial genera, correct pvalues with BH, extract the significant ones
+temp <- which(p.adjust(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$term == "Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
+bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$term == "Drought.or.Watered", ][c(temp), ]
+temp <- which(p.adjust(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$term == "SoilInoculum:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
+bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$term == "SoilInoculum:Drought.or.Watered", ][c(temp), ]
+temp <- which(p.adjust(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$term == "SoilInoculum", ]$p.value, method = "BH") < 0.05)
+bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$term == "SoilInoculum", ][c(temp), ]
+temp <- which(p.adjust(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$term == "Genotype", ]$p.value, method = "BH") < 0.05)
+bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$term == "Genotype", ][c(temp), ]
+# Conclusion 
+# Genera significant for drought: Arthrobacter, Cupriavidus, Nitrospirillum, Sphingomonas, Xanthobacter
+# Genera significant for Interaction (SIxDT): None
+# Genera significant for inoculum: Alsobacter, Flavobacterium, Kutzneria, Leifsonia, Marmoricola, Mucilaginibacter, Rhizobium, Rhodococcus
+# Genera significant for Genotype: None
 
-#### Correct P-vales of phylum models
-Return_SS_proportion <- function(model){
-  # **Model must be from Lmer (can be change to fit models from lm)**
-  SS <- c(anova(model)$Sum, sum(resid(model)^2))
-  output <- (SS / sum(SS)) * 100
-  output <- as.data.frame(output) 
-  rownames(output) <- c(rownames(anova(model)), "Residuals")
-  output <- t(output)
-  return(as.data.frame(output))
-}
-# Make list of phyla in order and run the function to generate the % variance by model by factor
-phyla_list <- levels(as.factor(phylum_df$Phylum))
-Percent_var <- bind_rows(Return_SS_proportion(mod.act),
-                         Return_SS_proportion(mod.arm),
-                         Return_SS_proportion(mod.bac),
-                         Return_SS_proportion(mod.chl),
-                         Return_SS_proportion(mod.cya),
-                         Return_SS_proportion(mod.dei),
-                         Return_SS_proportion(mod.fir),
-                         Return_SS_proportion(mod.gem),
-                         Return_SS_proportion(mod.nit),
-                         Return_SS_proportion(mod.pla),
-                         Return_SS_proportion(mod.pro),
-                         Return_SS_proportion(mod.tha),
-                         Return_SS_proportion(mod.ver))
-rownames(Percent_var) <- phyla_list
-# remove residual column
-Percent_var_noint_nores <- Percent_var[, !names(Percent_var) %in% "Residuals"]
-# Make dataframe of P values to connect to the % var df above
-Get_Pval<- function(model){
-  Pval<- as.data.frame(anova(model)$`Pr(>F)`)
-  rownames(Pval) <- paste(rownames(anova(model)), "p", sep = "_")
-  Pval<- t(Pval)
-  return(as.data.frame(Pval))
-}
-# Run function above on all anova and bind output by row
-Pval <- bind_rows(Get_Pval(mod.act),
-                  Get_Pval(mod.arm),
-                  Get_Pval(mod.bac),
-                  Get_Pval(mod.chl),
-                  Get_Pval(mod.cya),
-                  Get_Pval(mod.dei),
-                  Get_Pval(mod.fir),
-                  Get_Pval(mod.gem),
-                  Get_Pval(mod.nit),
-                  Get_Pval(mod.pla),
-                  Get_Pval(mod.pro),
-                  Get_Pval(mod.tha),
-                  Get_Pval(mod.ver))
-rownames(Pval) <- phyla_list
-# Combine variance and P val dataframes
-SS_pval_combo_df <- cbind(Percent_var_noint_nores,Pval)
-SS_pval_combo_df$Phylum <- rownames(SS_pval_combo_df)
-# Get variance columns
-total_var <- SS_pval_combo_df %>% dplyr::select(Phylum, "Genotype":"SoilInoculum:Drought.or.Watered")
-# Reorganize 
-total_var <- total_var %>% gather(key=factor, value=var, -Phylum)
-# Get p-value columns
-total_p_name <- SS_pval_combo_df %>% dplyr::select("Genotype_p":"SoilInoculum:Drought.or.Watered_p")
-total_p <- data.frame(t(apply(total_p_name, 1, FUN=p.adjust, method='BH')))
-colnames(total_p)<- colnames(total_p_name) #This is hacky but I need to preserve the colnames to correctly join them later on.
-total_p$Phylum <- SS_pval_combo_df$Phylum
-# Reorganize and rename to format for plotting
-total_p <- total_p %>% gather(key=factor, value=p_value, -Phylum)
-total_p <- total_p %>% mutate(factor=str_replace(factor,'_p$', ""))
-# Join variance and p-value tables back together 
-total_var_p <- full_join(total_var, total_p,by=c("Phylum", "factor"))
-total_var_p_sig <- total_var_p %>% filter(p_value < 0.05)
-total_var_p_sig
-#  Phylum                                       factor      var    p_value
-#  1 Deinococcus-Thermus                    SoilInoculum 6.928455 0.02815631
-#  2      Proteobacteria              Drought.or.Watered 3.680463 0.03599070
-#  3 Deinococcus-Thermus SoilInoculum:Drought.or.Watered 7.119791 0.02815631
+### Percent variance explained 
+(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Arthrobacter", ]$sumsq[3] /
+    sum(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Arthrobacter", ]$sumsq)) * 100 # 37.3% variance explained
+(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Cupriavidus", ]$sumsq[3] /
+    sum(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Cupriavidus", ]$sumsq)) * 100 # 50.4% variance explained
+(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Nitrospirillum", ]$sumsq[3] /
+    sum(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Nitrospirillum", ]$sumsq)) * 100 # 61.7% variance explained
+(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Sphingomonas", ]$sumsq[3] /
+    sum(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Sphingomonas", ]$sumsq)) * 100 # 76.0% variance explained
+(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Xanthobacter", ]$sumsq[3] /
+    sum(bact.clr.long.aovs_gen[bact.clr.long.aovs_gen$Genus == "Xanthobacter", ]$sumsq)) * 100 # 45.7% variance explained
 
-# Conclusion: 
-# Deinococcus-Thermus
-# ~6.93% of the variance in CLR abundance explained by Soil inoculum
-# ~7.11% of the variance in CLR abundance explained by Soil inoculum x treatment interaction
-# Proteobacteria
-# ~3.68% of the variance in CLR abundance explained by treatment
+### Taxonomy full: Treatment
+# Phylum         Class               Order            Family            Genus
+# Actinobacteria Actinobacteria      Actinomycetales  Micrococcaceae    Arthrobacter
+# Proteobacteria Betaproteobacteria  Burkholderiales  Burkholderiaceae  Cupriavidus
+# Proteobacteria Alphaproteobacteria Rhodospirillales Rhodospirillaceae Nitrospirillum
+# Proteobacteria Alphaproteobacteria Sphingomonadales Sphingomonadaceae Sphingomonas
+# Proteobacteria Alphaproteobacteria Rhizobiales      Xanthobacteraceae Xanthobacter
+
+### Relative abundance stats: Treatment
+drt.bact.late_genus <- phyloseq::tax_glom(drt.bact.late, "Genus")
+drt.bact.late_genus_relab <- transform_sample_counts(drt.bact.late_genus, function(x) x/sum(x))
+genus_relab <- psmelt(drt.bact.late_genus_relab)
+tapply(genus_relab[genus_relab$Genus == "Arthrobacter",]$Abundance, genus_relab[genus_relab$Genus == "Arthrobacter",]$Drought.or.Watered, summary)
+tapply(genus_relab[genus_relab$Genus == "Cupriavidus",]$Abundance, genus_relab[genus_relab$Genus == "Cupriavidus",]$Drought.or.Watered, summary)
+tapply(genus_relab[genus_relab$Genus == "Nitrospirillum",]$Abundance, genus_relab[genus_relab$Genus == "Nitrospirillum",]$Drought.or.Watered, summary)
+tapply(genus_relab[genus_relab$Genus == "Sphingomonas",]$Abundance, genus_relab[genus_relab$Genus == "Sphingomonas",]$Drought.or.Watered, summary)
+tapply(genus_relab[genus_relab$Genus == "Xanthobacter",]$Abundance, genus_relab[genus_relab$Genus == "Xanthobacter",]$Drought.or.Watered, summary)
+
 
 #### Taxonomic barplots ####
 # Use non-transformed data for relative abundance taxonomic barplots
