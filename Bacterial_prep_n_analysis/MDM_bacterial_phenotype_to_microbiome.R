@@ -50,6 +50,8 @@ drt.bact.late.clr_phy <- psmelt(phyloseq::tax_glom(drt.bact.late.clr, "Phylum"))
 drt.bact.late.clr_cla <- psmelt(phyloseq::tax_glom(drt.bact.late.clr, "Class")) # 21 taxa
 drt.bact.late.clr_ord <- psmelt(phyloseq::tax_glom(drt.bact.late.clr, "Order")) # 37 taxa
 drt.bact.late.clr_fam <- psmelt(phyloseq::tax_glom(drt.bact.late.clr, "Family")) # 84 taxa
+drt.bact.late.clr_gen <- psmelt(phyloseq::tax_glom(drt.bact.late.clr, "Genus")) # 161 taxa
+
 # LMs
 bact.clr.long.SMR.aovs_phy <- drt.bact.late.clr_phy %>% nest_by(Phylum) %>%
   mutate(mod = list(anova(lm(ShootMassRateResid ~ Abundance*Drought.or.Watered, data=data)))) %>%
@@ -63,28 +65,38 @@ bact.clr.long.SMR.aovs_ord <- drt.bact.late.clr_ord %>% nest_by(Order) %>%
 bact.clr.long.SMR.aovs_fam <- drt.bact.late.clr_fam %>% nest_by(Family) %>%
   mutate(mod = list(anova(lm(ShootMassRateResid ~ Abundance*Drought.or.Watered, data=data)))) %>%
   summarize(broom::tidy(mod))
-
+bact.clr.long.SMR.aovs_gen <- drt.bact.late.clr_gen %>% nest_by(Genus) %>%
+  mutate(mod = list(anova(lm(ShootMassRateResid ~ Abundance*Drought.or.Watered, data=data)))) %>%
+  summarize(broom::tidy(mod))
 
 # Adjust P values across taxonomic level but separately per term
 # Get corrected P values from here
-sum(p.adjust(bact.clr.long.SMR.aovs_phy[bact.clr.long.SMR.aovs_phy$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-temp <- which(p.adjust(bact.clr.long.SMR.aovs_phy[bact.clr.long.SMR.aovs_phy$term == "Abundance", ]$p.value, method = "BH") < 0.05)
-bact.clr.long.SMR.aovs_phy[bact.clr.long.SMR.aovs_phy$term == "Abundance", ][c(temp), ]
 
-sum(p.adjust(bact.clr.long.SMR.aovs_cla[bact.clr.long.SMR.aovs_cla$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-temp <- which(p.adjust(bact.clr.long.SMR.aovs_cla[bact.clr.long.SMR.aovs_cla$term == "Abundance", ]$p.value, method = "BH") < 0.05)
-bact.clr.long.SMR.aovs_cla[bact.clr.long.SMR.aovs_cla$term == "Abundance", ][c(temp), ]
+Padj.term.func <- function(factor, modelDF){
+  # Check if any are significant, save those their indexes to temp
+  temp <- which(p.adjust(modelDF[modelDF$term == factor, ]$p.value, method = "BH") < 0.05)
+    temp2 <- filter(modelDF, term == factor)
+    # adjust p values by term and add this to a term specific tibble save to temp2
+    temp2$p.adj <- p.adjust(modelDF[modelDF$term == factor, ]$p.value, method = "BH")
+    return(temp2[c(temp), ]) # index temp2 with temp
+    # Returns an empty tibble if none are significant after p.adjust
+}
 
-sum(p.adjust(bact.clr.long.SMR.aovs_ord[bact.clr.long.SMR.aovs_ord$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-temp <- which(p.adjust(bact.clr.long.SMR.aovs_ord[bact.clr.long.SMR.aovs_ord$term == "Abundance", ]$p.value, method = "BH") < 0.05)
-bact.clr.long.SMR.aovs_ord[bact.clr.long.SMR.aovs_ord$term == "Abundance", ][c(temp), ]
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.SMR.aovs_phy)
+Padj.term.func("Abundance", bact.clr.long.SMR.aovs_phy)
 
-temp <- which(p.adjust(bact.clr.long.SMR.aovs_fam[bact.clr.long.SMR.aovs_fam$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-  bact.clr.long.SMR.aovs_fam[bact.clr.long.SMR.aovs_fam$term == "Abundance:Drought.or.Watered", ][c(temp), ]
-temp <- which(p.adjust(bact.clr.long.SMR.aovs_fam[bact.clr.long.SMR.aovs_fam$term == "Abundance", ]$p.value, method = "BH") < 0.05)
-  bact.clr.long.SMR.aovs_fam[bact.clr.long.SMR.aovs_fam$term == "Abundance", ][c(temp), ]
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.SMR.aovs_cla)
+Padj.term.func("Abundance", bact.clr.long.SMR.aovs_cla)
 
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.SMR.aovs_ord)
+Padj.term.func("Abundance", bact.clr.long.SMR.aovs_ord)
 
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.SMR.aovs_fam)
+Padj.term.func("Abundance", bact.clr.long.SMR.aovs_fam)
+
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.SMR.aovs_gen)
+Padj.term.func("Abundance", bact.clr.long.SMR.aovs_gen)
+  
 # phylum 
 # Re-run models but dont send through anova and broom
 bact.clr.long.SMR.mod_phy <- drt.bact.late.clr_phy %>% nest_by(Phylum) %>%
@@ -184,7 +196,7 @@ Strep_interaction_plot <- filter(drt.bact.late.clr_fam, Family == "Streptococcac
   annotate("text", x = 10, y = 0.040, label = "W = -0.0031", fontface = 'italic') +
   annotate("text", x = 10, y = 0.035, label = "D = -0.0002", fontface = 'italic') +
   annotate("text", x = 10, y = 0.030, label = "PVEres = 3.29", fontface = 'italic') +
-  annotate("text", x = 10, y = 0.025, label = "Abund.×DT q <0.01", fontface = 'italic')
+  annotate("text", x = 10, y = 0.025, label = "Abund.×DT q = 0.02", fontface = 'italic')
   
 p1 <- ggarrange(Cory_interaction_plot, Strep_interaction_plot, labels = "AUTO", nrow = 1, align = "h", common.legend = TRUE, legend = 'right')
 ggsave("figures/Cory_Strep_interaction_plot.svg", height = 6, width = 12)
@@ -244,6 +256,67 @@ bact.clr.long.SMR.mod_fam[bact.clr.long.SMR.mod_fam$Family == "Streptococcaceae"
 bact.clr.long.SMR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Streptococcaceae")
 mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Streptococcaceae",]$Abundance)*100) 
 
+# Genus
+# Re-run models but dont send through anova and broom
+bact.clr.long.SMR.mod_gen <- drt.bact.late.clr_gen %>% nest_by(Genus) %>%
+  mutate(mod = list(lm(ShootMassRateResid ~ Abundance*Drought.or.Watered, data=data)))
+# Relative abundance calculation and extraction
+drt.bact.late.gen <-  phyloseq::tax_glom(drt.bact.late, "Genus") # 84 taxa
+drt.bact.late.gen.relab <- psmelt(transform_sample_counts(drt.bact.late.gen, function(x) x/sum(x)))
+
+# Main Effects
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Amycolatopsis",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Amycolatopsis")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Amycolatopsis",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Arthrobacter",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Arthrobacter")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Arthrobacter",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Chelatococcus",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Chelatococcus")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Chelatococcus",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Corynebacterium",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Corynebacterium")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Corynebacterium",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Cupriavidus",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Cupriavidus")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Cupriavidus",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Dietzia",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Dietzia")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Dietzia",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Frigoribacterium",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Frigoribacterium")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Frigoribacterium",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Lactobacillus",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Lactobacillus")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Lactobacillus",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Minicystis",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Minicystis")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Minicystis",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Rhodococcus",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Rhodococcus")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Rhodococcus",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Sphingobium",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Sphingobium")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Sphingobium",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Sphingomonas",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Sphingomonas")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Sphingomonas",]$Abundance)*100) 
+
+bact.clr.long.SMR.mod_gen[bact.clr.long.SMR.mod_gen$Genus == "Streptococcus",]$mod[[1]]$coefficients
+bact.clr.long.SMR.aovs_gen %>% group_by(Genus) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Genus == "Streptococcus")
+mean((drt.bact.late.gen.relab[drt.bact.late.gen.relab$Genus == "Streptococcus",]$Abundance)*100) 
+
 
 
 ##### RootMassRate #####
@@ -271,23 +344,25 @@ bact.clr.long.RMR.aovs_ord <- drt.bact.late.clr_ord %>% nest_by(Order) %>%
 bact.clr.long.RMR.aovs_fam <- drt.bact.late.clr_fam %>% nest_by(Family) %>%
   mutate(mod = list(anova(lm(RootMassRateResid ~ Abundance*Drought.or.Watered , data=data)))) %>%
   summarize(broom::tidy(mod))
+bact.clr.long.RMR.aovs_gen <- drt.bact.late.clr_gen %>% nest_by(Genus) %>%
+  mutate(mod = list(anova(lm(RootMassRateResid ~ Abundance*Drought.or.Watered , data=data)))) %>%
+  summarize(broom::tidy(mod))
 
-#Adjust P values across taxonomic level
-sum(p.adjust(bact.clr.long.RMR.aovs_phy[bact.clr.long.RMR.aovs_phy$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-sum(p.adjust(bact.clr.long.RMR.aovs_phy[bact.clr.long.RMR.aovs_phy$term == "Abundance", ]$p.value, method = "BH") < 0.05)
+#Adjust P values across term
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RMR.aovs_phy)
+Padj.term.func("Abundance", bact.clr.long.RMR.aovs_phy)
 
-sum(p.adjust(bact.clr.long.RMR.aovs_cla[bact.clr.long.RMR.aovs_cla$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-sum(p.adjust(bact.clr.long.RMR.aovs_cla[bact.clr.long.RMR.aovs_cla$term == "Abundance", ]$p.value, method = "BH") < 0.05)
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RMR.aovs_cla)
+Padj.term.func("Abundance", bact.clr.long.RMR.aovs_cla)
 
-sum(p.adjust(bact.clr.long.RMR.aovs_ord[bact.clr.long.RMR.aovs_ord$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-sum(p.adjust(bact.clr.long.RMR.aovs_ord[bact.clr.long.RMR.aovs_ord$term == "Abundance", ]$p.value, method = "BH") < 0.05)
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RMR.aovs_ord)
+Padj.term.func("Abundance", bact.clr.long.RMR.aovs_ord)
 
-sum(p.adjust(bact.clr.long.RMR.aovs_fam[bact.clr.long.RMR.aovs_fam$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-sum(p.adjust(bact.clr.long.RMR.aovs_fam[bact.clr.long.RMR.aovs_fam$term == "Abundance", ]$p.value, method = "BH") < 0.05)
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RMR.aovs_fam)
+Padj.term.func("Abundance", bact.clr.long.RMR.aovs_fam)
 
-sum(p.adjust(bact.clr.long.RMR.aovs_gen[bact.clr.long.RMR.aovs_gen$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-sum(p.adjust(bact.clr.long.RMR.aovs_gen[bact.clr.long.RMR.aovs_gen$term == "Abundance", ]$p.value, method = "BH") < 0.05)
-
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RMR.aovs_gen)
+Padj.term.func("Abundance", bact.clr.long.RMR.aovs_gen)
 
 
 ##### Root/Shoot Ratio #####
@@ -320,106 +395,17 @@ bact.clr.long.RSR.aovs_gen <- drt.bact.late.clr_gen %>% nest_by(Genus) %>%
   summarize(broom::tidy(mod))
 
 #Adjust P values across taxonomic level
-sum(p.adjust(bact.clr.long.RSR.aovs_phy[bact.clr.long.RSR.aovs_phy$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-temp <- which(p.adjust(bact.clr.long.RSR.aovs_phy[bact.clr.long.RSR.aovs_phy$term == "Abundance", ]$p.value, method = "BH") < 0.05)
-bact.clr.long.RSR.aovs_phy[bact.clr.long.RSR.aovs_phy$term == "Abundance", ][c(temp), ]
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RSR.aovs_phy)
+Padj.term.func("Abundance", bact.clr.long.RSR.aovs_phy)
 
-sum(p.adjust(bact.clr.long.RSR.aovs_cla[bact.clr.long.RSR.aovs_cla$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-temp <- which(p.adjust(bact.clr.long.RSR.aovs_cla[bact.clr.long.RSR.aovs_cla$term == "Abundance", ]$p.value, method = "BH") < 0.05)
-bact.clr.long.RSR.aovs_cla[bact.clr.long.RSR.aovs_cla$term == "Abundance", ][c(temp), ]
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RSR.aovs_cla)
+Padj.term.func("Abundance", bact.clr.long.RSR.aovs_cla)
 
-sum(p.adjust(bact.clr.long.RSR.aovs_ord[bact.clr.long.RSR.aovs_ord$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-temp <- which(p.adjust(bact.clr.long.RSR.aovs_ord[bact.clr.long.RSR.aovs_ord$term == "Abundance", ]$p.value, method = "BH") < 0.05)
-bact.clr.long.RSR.aovs_ord[bact.clr.long.RSR.aovs_ord$term == "Abundance", ][c(temp), ]
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RSR.aovs_ord)
+Padj.term.func("Abundance", bact.clr.long.RSR.aovs_ord)
 
-sum(p.adjust(bact.clr.long.RSR.aovs_fam[bact.clr.long.RSR.aovs_fam$term == "Abundance:Drought.or.Watered", ]$p.value, method = "BH") < 0.05)
-temp <- which(p.adjust(bact.clr.long.RSR.aovs_fam[bact.clr.long.RSR.aovs_fam$term == "Abundance", ]$p.value, method = "BH") < 0.05)
-bact.clr.long.RSR.aovs_fam[bact.clr.long.RSR.aovs_fam$term == "Abundance", ][c(temp),]
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RSR.aovs_fam)
+Padj.term.func("Abundance", bact.clr.long.RSR.aovs_fam)
 
-
-#phylum
-# Re-run models but don't send through anova and broom
-bact.clr.long.RSR.mod_phy <- drt.bact.late.clr_phy %>% nest_by(Phylum) %>%
-  mutate(mod = list(lm(RootShootRatioResid ~ Abundance*Drought.or.Watered, data=data)))
-# Relative abundance calculation and extraction
-drt.bact.late.phy <-  phyloseq::tax_glom(drt.bact.late, "Phylum") # 13 taxa
-drt.bact.late.phy.relab <- psmelt(transform_sample_counts(drt.bact.late.phy, function(x) x/sum(x)))
-
-bact.clr.long.RSR.mod_phy[bact.clr.long.RSR.mod_phy$Phylum == "Actinobacteria",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_phy %>% group_by(Phylum) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Phylum == "Actinobacteria")
-mean((drt.bact.late.phy.relab[drt.bact.late.phy.relab$Phylum == "Actinobacteria",]$Abundance)*100) 
-
-
-#class
-# Re-run models but don't send through anova and broom
-bact.clr.long.RSR.mod_cla <- drt.bact.late.clr_cla %>% nest_by(Class) %>%
-  mutate(mod = list(lm(RootShootRatioResid ~ Abundance*Drought.or.Watered, data=data)))
-# Relative abundance calculation and extraction
-drt.bact.late.cla <-  phyloseq::tax_glom(drt.bact.late, "Class") # 21 taxa
-drt.bact.late.cla.relab <- psmelt(transform_sample_counts(drt.bact.late.cla, function(x) x/sum(x)))
-
-bact.clr.long.RSR.mod_cla[bact.clr.long.RSR.mod_cla$Class == "Actinobacteria",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_cla %>% group_by(Class) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Class == "Actinobacteria")
-mean((drt.bact.late.cla.relab[drt.bact.late.cla.relab$Class == "Actinobacteria",]$Abundance)*100) 
-
-
-#order
-# Re-run models but don't send through anova and broom
-bact.clr.long.RSR.mod_ord <- drt.bact.late.clr_ord %>% nest_by(Order) %>%
-  mutate(mod = list(lm(RootShootRatioResid ~ Abundance*Drought.or.Watered, data=data)))
-# Relative abundance calculation and extraction
-drt.bact.late.ord <-  phyloseq::tax_glom(drt.bact.late, "Order") # 37 taxa
-drt.bact.late.ord.relab <- psmelt(transform_sample_counts(drt.bact.late.ord, function(x) x/sum(x)))
-
-bact.clr.long.RSR.mod_ord[bact.clr.long.RSR.mod_ord$Order == "Actinomycetales",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_ord %>% group_by(Order) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Order == "Actinomycetales")
-mean((drt.bact.late.ord.relab[drt.bact.late.ord.relab$Order == "Actinomycetales",]$Abundance)*100) 
-
-bact.clr.long.RSR.mod_ord[bact.clr.long.RSR.mod_ord$Order == "Sphingomonadales",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_ord %>% group_by(Order) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Order == "Sphingomonadales")
-mean((drt.bact.late.ord.relab[drt.bact.late.ord.relab$Order == "Sphingomonadales",]$Abundance)*100) 
-
-
-#Family
-# Re-run models but don't send through anova and broom
-bact.clr.long.RSR.mod_fam <- drt.bact.late.clr_fam %>% nest_by(Family) %>%
-  mutate(mod = list(lm(RootShootRatioResid ~ Abundance*Drought.or.Watered, data=data)))
-# Relative abundance calculation and extraction
-drt.bact.late.fam <-  phyloseq::tax_glom(drt.bact.late, "Family") # 37 taxa
-drt.bact.late.fam.relab <- psmelt(transform_sample_counts(drt.bact.late.fam, function(x) x/sum(x)))
-
-bact.clr.long.RSR.mod_fam[bact.clr.long.RSR.mod_fam$Family == "Dietziaceae",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Dietziaceae")
-mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Dietziaceae",]$Abundance)*100) 
-
-bact.clr.long.RSR.mod_fam[bact.clr.long.RSR.mod_fam$Family == "Microbacteriaceae",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Microbacteriaceae")
-mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Microbacteriaceae",]$Abundance)*100) 
-
-bact.clr.long.RSR.mod_fam[bact.clr.long.RSR.mod_fam$Family == "Micrococcaceae",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Micrococcaceae")
-mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Micrococcaceae",]$Abundance)*100) 
-
-bact.clr.long.RSR.mod_fam[bact.clr.long.RSR.mod_fam$Family == "Mycobacteriaceae",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Mycobacteriaceae")
-mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Mycobacteriaceae",]$Abundance)*100) 
-
-bact.clr.long.RSR.mod_fam[bact.clr.long.RSR.mod_fam$Family == "Polyangiaceae",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Polyangiaceae")
-mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Polyangiaceae",]$Abundance)*100) 
-
-bact.clr.long.RSR.mod_fam[bact.clr.long.RSR.mod_fam$Family == "Rhodospirillaceae",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Rhodospirillaceae")
-mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Rhodospirillaceae",]$Abundance)*100) 
-
-bact.clr.long.RSR.mod_fam[bact.clr.long.RSR.mod_fam$Family == "Sinobacteraceae",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Sinobacteraceae")
-mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Sinobacteraceae",]$Abundance)*100) 
-
-bact.clr.long.RSR.mod_fam[bact.clr.long.RSR.mod_fam$Family == "Sphingomonadaceae",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Sphingomonadaceae")
-mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Sphingomonadaceae",]$Abundance)*100) 
-
-bact.clr.long.RSR.mod_fam[bact.clr.long.RSR.mod_fam$Family == "Streptococcaceae",]$mod[[1]]$coefficients
-bact.clr.long.RSR.aovs_fam %>% group_by(Family) %>% mutate(PVE = (sumsq / sum(sumsq)) * 100) %>% filter(Family == "Streptococcaceae")
-mean((drt.bact.late.fam.relab[drt.bact.late.fam.relab$Family == "Streptococcaceae",]$Abundance)*100) 
+Padj.term.func("Abundance:Drought.or.Watered", bact.clr.long.RSR.aovs_gen)
+Padj.term.func("Abundance", bact.clr.long.RSR.aovs_gen)
