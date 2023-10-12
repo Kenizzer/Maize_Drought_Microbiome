@@ -23,6 +23,7 @@ library(lme4); packageVersion('lme4')
 library(lmerTest); packageVersion('lmerTest')
 library(emmeans); packageVersion('emmeans')
 library(ggpubr); packageVersion('ggpubr')
+library(fantaxtic); packageVersion('fantaxtic')
 
 # Theme set and Color Palettes
 theme_set(theme_pubr())
@@ -33,13 +34,13 @@ location_pallete <- c("SVR" = "#88CCEE", "HAY" = "#CC6677", "TLI" = "#DDCC77", "
 soil_merged_pallete<- c("SVR_Agriculture" = "#780c72","SVR_Native" = "#de3a68", "HAY_Native" = "#f5805d",
                         "TLI_Agriculture" = "#ffe785", "TLI_Native" = "#7fd66f", "KNZ_Native" = "#3ba150") # Combination of Soil habitat and location, colors from https://lospec.com/palette-list/zencillo14
 
-phyla_palette <- c("Actinobacteria" = "#88CCEE", "Armatimonadetes"= "#CC6677",
-                             "Bacteroidetes" = "#DDCC77",  "Chloroflexi" = "#AA4499",
-                             "Firmicutes" = "#999933", "Gemmatimonadetes" = "#44AA99",
-                            "Nitrospirae" = "#D55E00", "Proteobacteria" = "#117733",
-                            "Planctomycetes" =  "#6699CC", "Verrucomicrobia" = "#882255",
-                            "Deinococcus-Thermus" = "#000000", "Thaumarchaeota" = "#6948b8", 
-                            "Other" = "#888888")
+phyla_palette <- c("Actinobacteria" = "#D55E00", "Armatimonadetes"= "#FF5733",
+                   "Bacteroidetes" = "#999933",  "Chloroflexi" = "#AA4499",
+                   "Firmicutes" = "#6948b8" , "Gemmatimonadetes" = "#CC6677",
+                   "Nitrospirae" = "#51C14B", "Proteobacteria" = "#117733",
+                   "Planctomycetes" =  "#6699CC", "Verrucomicrobia" = "#882255",
+                   "Deinococcus-Thermus" = "#000000", "Thaumarchaeota" =  "#138D75" , 
+                   "Other" = "#888888")
 
 ### Load datasets for use throughout ###
 drt.bact.late <- readRDS('Intermediate_data/phyloseq_b_asv_clean_inoculated_late.RDS')
@@ -532,11 +533,29 @@ phyla_palette_MOD <- c("Actinobacteria" = "#D55E00",
                              "Verrucomicrobia" = "#882255",
                              "Other" = "#888888")
 
+
+
+# Fixing labeling and order issues for facets
+class_top10_ordered <- class_top10_ordered %>%
+  mutate(Drought.or.Watered = fct_recode(as.factor(Drought.or.Watered), 
+                                                   Drought = "D",
+                                                   "Well-Watered" = "W"))
+class_top10_ordered <- class_top10_ordered %>%
+  mutate(SoilInoculum = fct_recode(as.factor(SoilInoculum), 
+                                         `HAY[P]` = "HAY_Native",
+                                         `KNZ[P]` = "KNZ_Native",
+                                         `SVR[Ag]` = "SVR_Agriculture",
+                                         `SVR[P]` = "SVR_Native",
+                                         `TLI[Ag]` = "TLI_Agriculture",
+                                         `TLI[P]` = "TLI_Native"))
+class_top10_ordered$SoilInoculum <- factor(class_top10_ordered$SoilInoculum, levels = c("SVR[Ag]", "SVR[P]", "HAY[P]", "TLI[Ag]", "TLI[P]", "KNZ[P]"))
+
+
 a <- ggplot(class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Phylum)) +
   geom_bar(stat = "identity") +
   ylab("Relative abundance") +
   xlab("sample") +
-  facet_wrap(~Drought.or.Watered, scale = "free", nrow = 2) +
+  facet_wrap(~Drought.or.Watered + SoilInoculum, scale = "free_x", nrow = 2, labeller = label_parsed) +
   scale_fill_manual(values=phyla_palette_MOD, labels = c("Actinomycetota", 
                                                          "Bacteroidota",
                                                          "Bacillota",
@@ -546,7 +565,7 @@ a <- ggplot(class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Phylum)) 
                                                          "Deltaproteobacteria",
                                                          "Gammaproteobacteria",
                                                          "Verrucomicrobiota",
-                                                         "Other")) +
+                                                         "Low Abundance Taxa")) +
   guides(fill=guide_legend(nrow=5, byrow=TRUE)) +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
@@ -560,13 +579,14 @@ a <- ggplot(class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Phylum)) 
 drt.bact.dbRDA <- ordinate(drt.bact.late.clr, distance = 'euclidean', method = 'RDA', formula=~Drought.or.Watered+Condition(Plate + logObs))
 anova.cca(drt.bact.dbRDA) 
 #Color and shape of plotted points drought treatment
-b <- plot_ordination(drt.bact.late.clr,drt.bact.dbRDA,color = 'Drought.or.Watered') + geom_point(size=2) + scale_color_manual(values = treatment_pallete, name = "Treatment")
+b <- plot_ordination(drt.bact.late.clr,drt.bact.dbRDA,color = 'Drought.or.Watered') + geom_point(size=2) + scale_color_manual(values = treatment_pallete, name = "Treatment", labels = c("Drought (D)", "Well-Watered (W)"))
 b <- b + annotate("text", x = 7, y = 5, label = "Treatment p <0.01", fontface = 'italic')
+b <- b + guides(color = guide_legend(nrow = 2))
 # Random forest prediction for treatment
 c <- readRDS("./Intermediate_data/RF_CM_Treatment_CV10_300trees_rand_split.rds")
 c <- c$CMatrixPLOT
 part <- ggarrange(b,c, ncol = 1, heights = c(1,0.85), align = 'v', labels = c("B","C"))
-fig3_abc <- ggarrange(a,part, ncol = 2, widths = c(1,0.75), labels = c("A"))
+fig3_abc <- ggarrange(a,part, ncol = 2, widths = c(1.3,0.55), labels = c("A"))
 ggsave("figures/figure4_panels_abc.svg", fig3_abc, height = 6, width = 10)
 ggsave("figures/figure4_panels_abc.png", fig3_abc, height = 6, width = 10)
 

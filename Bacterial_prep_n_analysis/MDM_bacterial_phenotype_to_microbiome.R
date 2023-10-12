@@ -171,7 +171,7 @@ Cory_interaction_plot <- filter(drt.bact.late.clr_fam, Family == "Corynebacteria
   xlab("CLR Transformed Abundance") +
   geom_point() +
   geom_smooth(method = "lm") +
-  scale_color_manual(name = "Treatment", values = treatment_pallete) +
+  scale_color_manual(name = "Treatment", values = treatment_pallete, labels = c("Drought", "Well-Watered")) +
   annotate("text", x = 10, y = 0.040, label = "W = -0.0032", fontface = 'italic') +
   annotate("text", x = 10, y = 0.035, label = "D = -0.0001", fontface = 'italic') +
   annotate("text", x = 10, y = 0.030, label = "PVEres = 4.79", fontface = 'italic') +

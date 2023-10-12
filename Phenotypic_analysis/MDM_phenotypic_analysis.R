@@ -18,7 +18,6 @@
 library(tidyverse); packageVersion('tidyverse')
 library(phyloseq); packageVersion('phyloseq')
 library(vegan); packageVersion('vegan')
-library(ALDEx2); packageVersion('ALDEx2')
 library(lme4); packageVersion('lme4')
 library(lmerTest); packageVersion('lmerTest')
 library(emmeans); packageVersion('emmeans')
@@ -28,7 +27,8 @@ library(car); packageVersion('car')
 # Theme set and Color Palettes
 theme_set(theme_pubr())
 genotype_pallete <- c("B73" = "#91ff26", "Mo17" = "#9426ff")# B73/Mo17 - Genotype
-treatment_pallete <- c("W" = "#0000FF", "D" = "#DAA520") # Drought/WW     - Treatment
+treatment_pallete <- c("W" = "#0000FF", "D" = "#DAA520",
+                       "Well-Watered" = "#0000FF", "Drought" = "#DAA520") # Drought/WW     - Treatment
 habitat_pallete <- c("Agriculture" = "#332288", "Native" = "#44AA99") # Native/Ag.     - Soil habitat
 location_pallete <- c("SVR" = "#88CCEE", "HAY" = "#CC6677", "TLI" = "#DDCC77", "KNZ" = "#117733") # SVR/HAY/TLI/KNZ - Soil location
 soil_merged_pallete<- c("SVR_Agriculture" = "#780c72","SVR_Native" = "#de3a68", "HAY_Native" = "#f5805d",
@@ -66,7 +66,15 @@ sampledata_germinants$RootShootRatio <- rowSums(df, na.rm = TRUE)
 sampledata_germinants$RootShootRatio[sampledata_germinants$RootShootRatio == 0] <- NA
 rm(a,b,c,df)
 
-#### Figure S18 Root/shoot mass rate - boxplots ####
+#### Re-work the factor levels to make plots fully write out treatment levels
+sampledata_germinants <- sampledata_germinants %>%
+  mutate(Drought.or.Watered = fct_recode(as.factor(Drought.or.Watered), 
+                                     Drought = "D",
+                                     `Well-Watered` = "W"))
+
+
+
+#### Figure S19 Root/shoot mass rate - boxplots ####
 sampledata_germinants$RootMassRate # third timepoint
 
 sampledata_removed_NAs <- filter(sampledata_germinants, !(Timepoint == ""))
@@ -76,7 +84,8 @@ sampledata_removed_NAs$Timepoint <- factor(sampledata_removed_NAs$Timepoint, lev
 P1 <- ggplot(sampledata_removed_NAs, aes(x = Timepoint, y = RootMassRate)) +
         geom_jitter(width = 0.3) + geom_boxplot(alpha = 0.8, outlier.colour = NA) +
         ylab("Root Mass Rate (g/day)") + facet_wrap(~Drought.or.Watered) +
-        scale_x_discrete(labels=c("early" = "Early", "middle" = "Middle", "late" = "Late"))
+        scale_x_discrete(labels=c("early" = "Early", "middle" = "Middle", "late" = "Late")) 
+
 P2 <- ggplot(sampledata_removed_NAs, aes(x = Timepoint, y = ShootMassRate)) +
         geom_jitter(width = 0.3) + geom_boxplot(alpha = 0.8, outlier.colour = NA) +
         ylab("Shoot Mass Rate (g/day)") + facet_wrap(~Drought.or.Watered) +
@@ -418,7 +427,7 @@ ht_plot <- ggplot(sampledata.long, aes(x=Day,y=Height_cm,color=Drought.or.Watere
   geom_point(size=2, alpha = 0.3) +
   geom_line(aes(group=SampleID), alpha = 0.3) +
   geom_line(data = treatment_mean, size = 3) +
-  scale_color_manual(values= treatment_pallete) +
+  scale_color_manual(values= treatment_pallete, labels = c("Drought", "Well-Watered")) +
   labs(x = "Day", y = "Height (cm)") +
   theme(axis.title=element_text(size=18,face='bold'), axis.text=element_text(size=18), strip.text=element_text(size=18,face='bold'))+
   theme(legend.text=element_text(size=18),legend.title=element_blank(),legend.background=element_rect(color='grey77'),legend.position='right') +
@@ -449,6 +458,9 @@ pairs(emmeans(RMR_mod, ~ Genotype))
 pairs(emmeans(SMR_mod, ~ Drought.or.Watered))
 pairs(emmeans(SMR_mod, ~ Genotype))
 pairs(emmeans(SMR_mod, ~ SoilInoculum))
+
+pairs(emmeans(SMR_mod, ~ Genotype|SoilInoculum))
+
 
 pairs(emmeans(RSR_mod, ~ Drought.or.Watered))
 pairs(emmeans(RSR_mod, ~ Genotype))
@@ -484,6 +496,53 @@ cor.test(sampledata_germinants$TotalMassRate, sampledata_germinants$RootShootRat
 cor.test(sampledata_germinants$RootMassRate, sampledata_germinants$RootShootRatio, method = "pearson")
 
 ### Plotting of results
+temp <- plot(emmeans(SMR_mod, ~ Genotype | SoilInoculum, type = "response"), plotit = FALSE)
+
+temp <- temp %>%
+  mutate(SoilInoculum = fct_recode(as.factor(SoilInoculum), 
+                                   `HAY[P]` = "HAY_Native",
+                                   `KNZ[P]` = "KNZ_Native",
+                                   `SVR[Ag]` = "SVR_Agriculture",
+                                   `SVR[P]` = "SVR_Native",
+                                   `TLI[Ag]` = "TLI_Agriculture",
+                                   `TLI[P]` = "TLI_Native"))
+
+
+temp$SoilInoculum <- factor(temp$SoilInoculum , levels = c("SVR[Ag]", "SVR[P]", "HAY[P]", "TLI[Ag]", "TLI[P]", "KNZ[P]"))
+
+ggplot(temp, aes(x = pri.fac, y = the.emmean, color = pri.fac)) +
+       ylab("Adjusted Shoot Mass Rate (g/day)") +
+  scale_color_manual(values = genotype_pallete, name = "Genotype") +
+  geom_pointrange(aes(ymin = lower.CL, ymax = upper.CL),  size = 0.75, linewidth = 2, fill = "black", shape = 22) +
+  facet_wrap(~SoilInoculum, labeller = label_parsed, nrow = 1) +
+  theme(legend.text.align = 0, axis.title.x=element_blank())
+
+  
+
+
+
+
+
+
+
+sampledata_germinants$SoilInoculum <- factor(sampledata_germinants$SoilInoculum, levels = c("SVR_Agriculture", "SVR_Native", "HAY_Native",
+                                                                                            "TLI_Agriculture", "TLI_Native", "KNZ_Native"))
+
+ggplot(sampledata_germinants, aes(x = SoilInoculum, y = ShootMassRate, fill = SoilInoculum)) +
+  geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
+  ylab("Shoot Mass Rate (g/day)") +
+  scale_x_discrete("Soil Inoculum", labels = c(expression(SVR[Ag]),expression(SVR[P]),
+                                               expression(HAY[P]),expression(TLI[Ag]),
+                                               expression(TLI[P]),expression(KNZ[P]))) +
+  scale_fill_manual(values = soil_merged_pallete, name = "Soil Inoculum",
+                    labels = c(expression(SVR[Ag]),expression(SVR[P]),
+                               expression(HAY[P]),expression(TLI[Ag]),
+                               expression(TLI[P]),expression(KNZ[P]))) +
+  theme(legend.text.align = 0, axis.title.x=element_blank())
+
+
+
+
 # This tibble is used to place the significance letters at a consist height over each barplot
 labels_df <- tibble(Drought.or.Watered=levels(as.factor(sampledata_germinants$Drought.or.Watered)),
                     Genotype=levels(as.factor(sampledata_germinants$Genotype)),
@@ -554,19 +613,22 @@ a <- ggplot(sampledata_germinants, aes(x = Drought.or.Watered, y = ShootMassRate
   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") +
   scale_fill_manual(values = treatment_pallete, name = "Treatment") +
   ylab("Shoot Mass Rate (g/day)") + xlab("Treatment") + 
-  geom_text(data=labels_df, aes(Drought.or.Watered, SMR, label=c("a","b")), size = 6, color = '#3F3F3F')
+  geom_text(data=labels_df, aes(Drought.or.Watered, SMR, label=c("a","b")), size = 6, color = '#3F3F3F') +
+  theme(axis.title.x = element_blank())
 
 b <- ggplot(sampledata_germinants, aes(x = Drought.or.Watered, y = RootMassRate, fill = Drought.or.Watered)) +
   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") +
   scale_fill_manual(values = treatment_pallete, name = "Treatment") +
   ylab("Root Mass Rate (g/day)") + xlab("Treatment")+ 
-  geom_text(data=labels_df, aes(Drought.or.Watered, RMR, label=c("a","b")), size = 6, color = '#3F3F3F')
+  geom_text(data=labels_df, aes(Drought.or.Watered, RMR, label=c("a","b")), size = 6, color = '#3F3F3F') +
+  theme(axis.title.x = element_blank())
 
 c  <- ggplot(sampledata_germinants, aes(x = Drought.or.Watered, y = RootShootRatio, fill = Drought.or.Watered)) +
   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
   scale_fill_manual(values = treatment_pallete, name = "Treatment") +
   ylab("Root/Shoot Ratio") + xlab("Treatment") + 
-  geom_text(data=labels_df, aes(Drought.or.Watered, RSR, label=c("a","b")), size = 6, color = '#3F3F3F')
+  geom_text(data=labels_df, aes(Drought.or.Watered, RSR, label=c("a","b")), size = 6, color = '#3F3F3F') +
+  theme(axis.title.x = element_blank())
 
 part1 <- ggarrange(a,b,c, align = "hv", common.legend = TRUE, legend = 'right',labels = c("A","B","C"), nrow=1)
 # Genotype effects
@@ -574,20 +636,23 @@ d <- ggplot(sampledata_germinants, aes(x = Genotype, y = ShootMassRate, fill = G
   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") +
   scale_fill_manual(values = genotype_pallete, name = "Genotype") +
   ylab("Shoot Mass Rate (g/day)") + xlab("Genotype")  + 
-  geom_text(data=labels_df, aes(Genotype, SMR, label=c("a","b")), size = 6, color = '#3F3F3F')
+  geom_text(data=labels_df, aes(Genotype, SMR, label=c("a","b")), size = 6, color = '#3F3F3F') +
+  theme(axis.title.x = element_blank())
   
   
 e <- ggplot(sampledata_germinants, aes(x = Genotype, y = RootMassRate, fill = Genotype)) +
    geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") +
   scale_fill_manual(values = genotype_pallete, name = "Genotype") +
   ylab("Root Mass Rate (g/day)") + xlab("Genotype")  + 
-  geom_text(data=labels_df, aes(Genotype, RMR, label=c("a","b")), size = 6, color = '#3F3F3F')
+  geom_text(data=labels_df, aes(Genotype, RMR, label=c("a","b")), size = 6, color = '#3F3F3F') +
+  theme(axis.title.x = element_blank())
 
 f <- ggplot(sampledata_germinants, aes(x = Genotype, y = RootShootRatio, fill = Genotype)) +
   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
-  scale_fill_manual(values = genotype_pallete, name = "Treatment") +
+  scale_fill_manual(values = genotype_pallete, name = "Genotype") +
   ylab("Root/Shoot Ratio") + xlab("Genotype") + 
-  geom_text(data=labels_df, aes(Genotype, RSR, label=c("a","b")), size = 6, color = '#3F3F3F')
+  geom_text(data=labels_df, aes(Genotype, RSR, label=c("a","b")), size = 6, color = '#3F3F3F') +
+  theme(axis.title.x = element_blank())
 
 part2 <- ggarrange(d,e,f, align = "hv", common.legend = TRUE, legend = 'right',labels = c("D","E","F"), nrow=1)
 
@@ -602,7 +667,6 @@ ggsave("figures/figure3_phenotypic_treatment.png", part1, width = 10, height = 5
 
 #### Figure S6 #####
 part2 <- ggarrange(d,e,f, align = "hv", common.legend = TRUE, legend = 'right',labels = "AUTO", nrow=1)
-part2
 ggsave("figures/figureS6_phenotypic_genotype.svg", part2, width = 10, height = 5)
 ggsave("figures/figureS6_phenotypic_genotype.png", part2, width = 10, height = 5)
 
@@ -630,9 +694,8 @@ levels(sampledata_germinants$SoilInoculum)
 sampledata_germinants$SoilInoculum <- factor(sampledata_germinants$SoilInoculum, levels = c("SVR_Agriculture", "SVR_Native", "HAY_Native",
                                               "TLI_Agriculture", "TLI_Native", "KNZ_Native"))
 
-# Droughted plants
-
-a <- filter(sampledata_germinants, Drought.or.Watered == "D") %>%
+# Drought plants
+a <- filter(sampledata_germinants, Drought.or.Watered == "Drought") %>%
   ggplot(aes(x = SoilInoculum, y = ShootMassRate, fill = SoilInoculum)) +
   geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
   ylab("Shoot Mass Rate (g/day)") +
@@ -645,7 +708,7 @@ a <- filter(sampledata_germinants, Drought.or.Watered == "D") %>%
                     expression(TLI[P]),expression(KNZ[P]))) +
   theme(legend.text.align = 0, axis.title.x=element_blank())
 
-b <- filter(sampledata_germinants, Drought.or.Watered == "D") %>%
+b <- filter(sampledata_germinants, Drought.or.Watered == "Drought") %>%
 ggplot(aes(x = SoilInoculum, y = RootMassRate, fill = SoilInoculum)) +
   geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
   ylab("Root Mass Rate (g/day)") +
@@ -659,7 +722,7 @@ ggplot(aes(x = SoilInoculum, y = RootMassRate, fill = SoilInoculum)) +
   theme(legend.text.align = 0, axis.title.x=element_blank())
 
 
-c <- filter(sampledata_germinants, Drought.or.Watered == "D") %>%
+c <- filter(sampledata_germinants, Drought.or.Watered == "Drought") %>%
 ggplot(aes(x = SoilInoculum, y = RootShootRatio, fill = SoilInoculum)) +
   geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
   ylab("Root/Shoot Ratio") +
@@ -678,14 +741,14 @@ ggsave("figures/Drought_phenotype_response_to_soilinoculum.svg", Drought_pheno_s
 ggsave("figures/Drought_phenotype_response_to_soilinoculum.png", Drought_pheno_soilinoculum, width = 12, height = 6)
 
 # Stats
-anova(lmer(sqrt(ShootMassRate) ~ SoilInoculum + Genotype + (1|Block), data = sampledata_germinants[sampledata_germinants$Drought.or.Watered == "D",]))
-anova(lmer(sqrt(RootMassRate) ~ SoilInoculum +  Genotype + (1|Block), data = sampledata_germinants[sampledata_germinants$Drought.or.Watered == "D",]))
-anova(lmer(log(RootShootRatio) ~ SoilInoculum + Genotype + (1|Block), data = sampledata_germinants[sampledata_germinants$Drought.or.Watered == "D",]))
+anova(lmer(sqrt(ShootMassRate) ~ SoilInoculum + Genotype + (1|Block), data = sampledata_germinants[sampledata_germinants$Drought.or.Watered == "Drought",]))
+anova(lmer(sqrt(RootMassRate) ~ SoilInoculum +  Genotype + (1|Block), data = sampledata_germinants[sampledata_germinants$Drought.or.Watered == "Drought",]))
+anova(lmer(log(RootShootRatio) ~ SoilInoculum + Genotype + (1|Block), data = sampledata_germinants[sampledata_germinants$Drought.or.Watered == "Drought",]))
 # All non-significant with regards to soil inoculum source
 rm(a,b,c)
 
 # WW
-a<- filter(sampledata_germinants, Drought.or.Watered == "W") %>%
+a<- filter(sampledata_germinants, Drought.or.Watered == "Well-Watered") %>%
   ggplot(aes(x = SoilInoculum, y = ShootMassRate, fill = SoilInoculum)) +
   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
   ylab("Shoot Mass Rate (g/day)")  +
@@ -698,7 +761,7 @@ a<- filter(sampledata_germinants, Drought.or.Watered == "W") %>%
                                expression(TLI[P]),expression(KNZ[P]))) + 
   theme(legend.text.align = 0,  axis.title.x=element_blank())
 
-b<- filter(sampledata_germinants, Drought.or.Watered == "W") %>%
+b<- filter(sampledata_germinants, Drought.or.Watered == "Well-Watered") %>%
   ggplot(aes(x = SoilInoculum, y = RootMassRate, fill = SoilInoculum)) +
   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
   ylab("Root Mass Rate (g/day)")  +
@@ -713,7 +776,7 @@ b<- filter(sampledata_germinants, Drought.or.Watered == "W") %>%
 
 
 
-c<- filter(sampledata_germinants, Drought.or.Watered == "W") %>%
+c<- filter(sampledata_germinants, Drought.or.Watered == "Well-Watered") %>%
   ggplot( aes(x = SoilInoculum, y = RootShootRatio, fill = SoilInoculum)) +
   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
   ylab("Root/Shoot Ratio")  +
@@ -739,6 +802,11 @@ sampledata_w_controls$SoilInoculum <- as.factor(paste(sampledata_w_controls$Soil
 # Now remove non-germinants (coded numerically, No = 1, yes = 2)
 sampledata_w_controls$Germination <- as.numeric(as.factor(sampledata_w_controls$Germination))
 sampledata_w_controls_germinants <- sampledata_w_controls[sampledata_w_controls$Germination == 2,]
+#### Re-work the factor levels to make plots fully write out treatment levels
+sampledata_w_controls_germinants <- sampledata_w_controls_germinants %>%
+  mutate(Drought.or.Watered = fct_recode(as.factor(Drought.or.Watered), 
+                                         Drought = "D",
+                                         `Well-Watered` = "W"))
 ### Recalculating Root shoot ratio
 # Dry weight Roots / Dry weight Shoots
 a <- sampledata_w_controls_germinants$FirstDryRootWeight / sampledata_w_controls_germinants$FirstDryShootWeight
@@ -749,15 +817,12 @@ sampledata_w_controls_germinants$RootShootRatio <- rowSums(df, na.rm = TRUE)
 sampledata_w_controls_germinants$RootShootRatio[sampledata_w_controls_germinants$RootShootRatio == 0] <- NA
 rm(a,b,c,df)
 
-
 # Reorder dry to wet sites
 levels(sampledata_w_controls_germinants$SoilInoculum)
 sampledata_w_controls_germinants$SoilInoculum <- factor(sampledata_w_controls_germinants$SoilInoculum, levels = c("Control_Control","SVR_Agriculture", "SVR_Native", "HAY_Native",
                                                                                             "TLI_Agriculture", "TLI_Native", "KNZ_Native"))
-
 soil_merged_pallete_w_control <- c("Control_Control" = "#FFFFFF","SVR_Agriculture" = "#780c72","SVR_Native" = "#de3a68", "HAY_Native" = "#f5805d",
                         "TLI_Agriculture" = "#ffe785", "TLI_Native" = "#7fd66f", "KNZ_Native" = "#3ba150") 
-
 
 #### Figure 6 ####
 # Both plots together FACET 
@@ -805,7 +870,7 @@ c <- ggplot(sampledata_w_controls_germinants, aes(x = SoilInoculum, y = RootShoo
   facet_wrap(~Drought.or.Watered) + ylim(0,12) # This removes 4 points, noted in legend
 
 # add line plots
-Controls_phenotypic_responses_with_line_plot <- ggarrange(a, Native_only_smooth, ncol = 2, widths = c(1, 0.4), legend = 'right', labels = "AUTO")
+Controls_phenotypic_responses_with_line_plot <- ggarrange(a, Native_only_smooth, ncol = 2, widths = c(0.9, 0.5), legend = 'right', labels = "AUTO")
 # save
 ggsave("figures/Figure6_Controls_phenotypic_responses_facet_lineplots.svg", Controls_phenotypic_responses_with_line_plot, height = 8, width = 14)
 ggsave("figures/Figure6_Controls_phenotypic_responses_facet_lineplots.png", Controls_phenotypic_responses_with_line_plot,  height = 8, width = 14)
@@ -815,102 +880,158 @@ b
 c
 RMR_RSR_plot <- ggarrange(b,c, nrow = 2, common.legend = TRUE, labels = "AUTO", align = 'hv', legend = "right")
 # save
-ggsave("figures/FigureS15_Controls_phenotypic_responses_RMR_RSR.svg", RMR_RSR_plot, height = 8, width = 10)
-ggsave("figures/FigureS15_Controls_phenotypic_responses_RMR_RSR.png", RMR_RSR_plot,  height = 8, width = 10)
-
-#Seperate plots for D vs WW
-
-a <- filter(sampledata_w_controls_germinants, Drought.or.Watered == "D") %>%
-  ggplot(aes(x = SoilInoculum, y = ShootMassRate, fill = SoilInoculum)) +
-  geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
-  ylab("Shoot Mass Rate (g/day)") +
-  scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                                               expression(HAY[P]),expression(TLI[Ag]),
-                                               expression(TLI[P]),expression(KNZ[P]))) +
-  scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
-                    labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                               expression(HAY[P]),expression(TLI[Ag]),
-                               expression(TLI[P]),expression(KNZ[P]))) +
-  theme(legend.text.align = 0, axis.title.x=element_blank())
+ggsave("figures/FigureS16_Controls_phenotypic_responses_RMR_RSR.svg", RMR_RSR_plot, height = 8, width = 10)
+ggsave("figures/FigureS16_Controls_phenotypic_responses_RMR_RSR.png", RMR_RSR_plot,  height = 8, width = 10)
 
 
-b <- filter(sampledata_w_controls_germinants, Drought.or.Watered == "D") %>%
-  ggplot(aes(x = SoilInoculum, y = RootMassRate, fill = SoilInoculum)) +
-  geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
-  ylab("Root Mass Rate (g/day)") +
-  scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                                               expression(HAY[P]),expression(TLI[Ag]),
-                                               expression(TLI[P]),expression(KNZ[P]))) +
-  scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
-                    labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                               expression(HAY[P]),expression(TLI[Ag]),
-                               expression(TLI[P]),expression(KNZ[P]))) +
-  theme(legend.text.align = 0, axis.title.x=element_blank())
+#### Testing with average  plant responses
+#At this point, I think a correlation analysis/linear model can only be done correctly using the average
+#plant response to each annual precipitation*treatment/genotype combination, leaving 8 data points per plot/analysis.
+# 30 year normal MAP 1991-2021
+sampledata_with_MAP <- sampledata_germinants %>%
+  group_by(SoilInoculum) %>%
+  mutate( MAP = case_when(
+    SoilInoculum == "SVR_Native" ~ 478.9250,
+    SoilInoculum == "SVR_Agriculture" ~ 482.0094,
+    SoilInoculum == "HAY_Native" ~ 601.7375,
+    SoilInoculum == "TLI_Agriculture" ~ 785.1406,
+    SoilInoculum == "TLI_Native" ~ 783.8156,
+    SoilInoculum == "KNZ_Native" ~ 912.3438))
 
 
-c <- filter(sampledata_w_controls_germinants, Drought.or.Watered == "D") %>%
-  ggplot(aes(x = SoilInoculum, y = RootShootRatio, fill = SoilInoculum)) +
-  geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
-  ylab("Root/Shoot Ratio") +
-  scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                                               expression(HAY[P]),expression(TLI[Ag]),
-                                               expression(TLI[P]),expression(KNZ[P]))) +
-  scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
-                    labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                               expression(HAY[P]),expression(TLI[Ag]),
-                               expression(TLI[P]),expression(KNZ[P]))) +
-  theme(legend.text.align = 0, axis.title.x=element_blank())
+temp <- sampledata_with_MAP %>% 
+  group_by(MAP, SoilInoculum, Genotype, Drought.or.Watered, Block) %>% 
+  summarise(ShootMassRate_mean = mean(ShootMassRate, na.rm = TRUE),
+            RootMassRate_mean = mean(RootMassRate, na.rm = TRUE),
+            RootShootRatio_mean = mean(RootShootRatio, na.rm = TRUE))
 
-Drought_pheno_soilinoculum_w_controls <- ggarrange(a,b,c, labels = "AUTO", nrow = 1, common.legend = TRUE, legend = 'right')
 
-ggsave("figures/Drought_phenotype_response_to_soilinoculum_w_controls.svg", Drought_pheno_soilinoculum_w_controls, width = 16, height = 6)
-ggsave("figures/Drought_phenotype_response_to_soilinoculum_w_controls.png", Drought_pheno_soilinoculum_w_controls, width = 16, height = 6)
+#STATS
+SMR.native.mod <- lmer(ShootMassRate_mean ~ MAP*Drought.or.Watered*Genotype +(1|Block), data = filter(temp, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")))
+anova(SMR.native.mod)
+emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "MAP")
+emtrends(SMR.native.mod, ~ Genotype, var = "MAP") 
+# Both MAP interactions with genotype and treatment are significant
+# PLOT them
 
-rm(a,b,c)
 
-# WW
-a<- filter(sampledata_w_controls_germinants, Drought.or.Watered == "W") %>%
-  ggplot(aes(x = SoilInoculum, y = ShootMassRate, fill = SoilInoculum)) +
-  geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
-  ylab("Shoot Mass Rate (g/day)")  +
-  scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                                               expression(HAY[P]),expression(TLI[Ag]),
-                                               expression(TLI[P]),expression(KNZ[P]))) +
-  scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
-                    labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                               expression(HAY[P]),expression(TLI[Ag]),
-                               expression(TLI[P]),expression(KNZ[P]))) +
-  theme(legend.text.align = 0, axis.title.x=element_blank())
+filter(temp, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")) %>%
+  ggplot(aes(x = MAP, y = ShootMassRate_mean, color = Drought.or.Watered)) +
+  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
+  scale_color_manual(name = "Treatment" , values = treatment_pallete) +
+  ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
+  ylim(0.000, 0.022) + annotate("text", x = 775, y= 0.022, label = "W = -2.95 e-6", fontface = 'italic') +
+  annotate("text", x = 775, y= 0.020, label = "D =  6.09 e-7", fontface = 'italic') +
+  annotate("text", x = 775, y= 0.018, label = "MAP×DT p = 0.03", fontface = 'italic')
 
-b<- filter(sampledata_w_controls_germinants, Drought.or.Watered == "W") %>%
-  ggplot(aes(x = SoilInoculum, y = RootMassRate, fill = SoilInoculum)) +
-  geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
-  ylab("Root Mass Rate (g/day)")  +
-  scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                                               expression(HAY[P]),expression(TLI[Ag]),
-                                               expression(TLI[P]),expression(KNZ[P]))) +
-  scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
-                    labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                               expression(HAY[P]),expression(TLI[Ag]),
-                               expression(TLI[P]),expression(KNZ[P]))) +
-  theme(legend.text.align = 0, axis.title.x=element_blank())
+filter(temp, SoilInoculum %in% c("SVR_Native", "HAY_Native", "TLI_Native", "KNZ_Native")) %>%
+  ggplot(aes(x = MAP, y = ShootMassRate_mean, color = Genotype)) +
+  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
+  scale_color_manual(name = "Genotype" , values = genotype_pallete) +
+  ylab("Shoot Mass Rate (g/day)") + xlab("Normal Annual Precipitation (mm)") +
+  ylim(0.000, 0.022) + annotate("text", x = 775, y=0.022, label = "B73 = -3.00 e-6", fontface = 'italic') +
+  annotate("text", x = 775, y=0.020, label = "Mo17 = 6.56 e-7", fontface = 'italic') +
+  annotate("text", x = 775, y=0.018, label = "MAP×G p = 0.03", fontface = 'italic') 
+
+Native_only_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'v', legend = 'right', labels = c('B', 'C'))
 
 
 
-c<- filter(sampledata_w_controls_germinants, Drought.or.Watered == "W") %>%
-  ggplot( aes(x = SoilInoculum, y = RootShootRatio, fill = SoilInoculum)) +
-  geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
-  ylab("Root/Shoot Ratio")  +
-  scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                                               expression(HAY[P]),expression(TLI[Ag]),
-                                               expression(TLI[P]),expression(KNZ[P]))) +
-  scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
-                    labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
-                               expression(HAY[P]),expression(TLI[Ag]),
-                               expression(TLI[P]),expression(KNZ[P]))) +
-  theme(legend.text.align = 0, axis.title.x=element_blank())
+# CUTS
+# #Separate plots for D vs WW
+# a <- filter(sampledata_w_controls_germinants, Drought.or.Watered == "D") %>%
+#   ggplot(aes(x = SoilInoculum, y = ShootMassRate, fill = SoilInoculum)) +
+#   geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
+#   ylab("Shoot Mass Rate (g/day)") +
+#   scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                                expression(HAY[P]),expression(TLI[Ag]),
+#                                                expression(TLI[P]),expression(KNZ[P]))) +
+#   scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
+#                     labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                expression(HAY[P]),expression(TLI[Ag]),
+#                                expression(TLI[P]),expression(KNZ[P]))) +
+#   theme(legend.text.align = 0, axis.title.x=element_blank())
+# 
+# 
+# b <- filter(sampledata_w_controls_germinants, Drought.or.Watered == "D") %>%
+#   ggplot(aes(x = SoilInoculum, y = RootMassRate, fill = SoilInoculum)) +
+#   geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
+#   ylab("Root Mass Rate (g/day)") +
+#   scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                                expression(HAY[P]),expression(TLI[Ag]),
+#                                                expression(TLI[P]),expression(KNZ[P]))) +
+#   scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
+#                     labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                expression(HAY[P]),expression(TLI[Ag]),
+#                                expression(TLI[P]),expression(KNZ[P]))) +
+#   theme(legend.text.align = 0, axis.title.x=element_blank())
+# 
+# 
+# c <- filter(sampledata_w_controls_germinants, Drought.or.Watered == "D") %>%
+#   ggplot(aes(x = SoilInoculum, y = RootShootRatio, fill = SoilInoculum)) +
+#   geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
+#   ylab("Root/Shoot Ratio") +
+#   scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                                expression(HAY[P]),expression(TLI[Ag]),
+#                                                expression(TLI[P]),expression(KNZ[P]))) +
+#   scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
+#                     labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                expression(HAY[P]),expression(TLI[Ag]),
+#                                expression(TLI[P]),expression(KNZ[P]))) +
+#   theme(legend.text.align = 0, axis.title.x=element_blank())
+# 
+# Drought_pheno_soilinoculum_w_controls <- ggarrange(a,b,c, labels = "AUTO", nrow = 1, common.legend = TRUE, legend = 'right')
+# 
+# ggsave("figures/Drought_phenotype_response_to_soilinoculum_w_controls.svg", Drought_pheno_soilinoculum_w_controls, width = 16, height = 6)
+# ggsave("figures/Drought_phenotype_response_to_soilinoculum_w_controls.png", Drought_pheno_soilinoculum_w_controls, width = 16, height = 6)
+# 
+# rm(a,b,c)
+# 
+# # WW
+# a<- filter(sampledata_w_controls_germinants, Drought.or.Watered == "W") %>%
+#   ggplot(aes(x = SoilInoculum, y = ShootMassRate, fill = SoilInoculum)) +
+#   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
+#   ylab("Shoot Mass Rate (g/day)")  +
+#   scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                                expression(HAY[P]),expression(TLI[Ag]),
+#                                                expression(TLI[P]),expression(KNZ[P]))) +
+#   scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
+#                     labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                expression(HAY[P]),expression(TLI[Ag]),
+#                                expression(TLI[P]),expression(KNZ[P]))) +
+#   theme(legend.text.align = 0, axis.title.x=element_blank())
+# 
+# b<- filter(sampledata_w_controls_germinants, Drought.or.Watered == "W") %>%
+#   ggplot(aes(x = SoilInoculum, y = RootMassRate, fill = SoilInoculum)) +
+#   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
+#   ylab("Root Mass Rate (g/day)")  +
+#   scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                                expression(HAY[P]),expression(TLI[Ag]),
+#                                                expression(TLI[P]),expression(KNZ[P]))) +
+#   scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
+#                     labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                expression(HAY[P]),expression(TLI[Ag]),
+#                                expression(TLI[P]),expression(KNZ[P]))) +
+#   theme(legend.text.align = 0, axis.title.x=element_blank())
+# 
+# 
+# 
+# c<- filter(sampledata_w_controls_germinants, Drought.or.Watered == "W") %>%
+#   ggplot( aes(x = SoilInoculum, y = RootShootRatio, fill = SoilInoculum)) +
+#   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
+#   ylab("Root/Shoot Ratio")  +
+#   scale_x_discrete("Soil Inoculum", labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                                expression(HAY[P]),expression(TLI[Ag]),
+#                                                expression(TLI[P]),expression(KNZ[P]))) +
+#   scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum", 
+#                     labels = c("Control", expression(SVR[Ag]),expression(SVR[P]),
+#                                expression(HAY[P]),expression(TLI[Ag]),
+#                                expression(TLI[P]),expression(KNZ[P]))) +
+#   theme(legend.text.align = 0, axis.title.x=element_blank())
+# 
+# WellWatered_pheno_soilinoculum_w_controls <- ggarrange(a,b,c, labels = "AUTO", nrow = 1, common.legend = TRUE, legend = 'right')
+# 
+# ggsave("figures/WellWatered_phenotype_response_to_soilinoculum_w_controls.svg", WellWatered_pheno_soilinoculum_w_controls, width = 16, height = 6)
+# ggsave("figures/WellWatered_phenotype_response_to_soilinoculum_w_controls.png", WellWatered_pheno_soilinoculum_w_controls, width = 16, height = 6)
 
-WellWatered_pheno_soilinoculum_w_controls <- ggarrange(a,b,c, labels = "AUTO", nrow = 1, common.legend = TRUE, legend = 'right')
 
-ggsave("figures/WellWatered_phenotype_response_to_soilinoculum_w_controls.svg", WellWatered_pheno_soilinoculum_w_controls, width = 16, height = 6)
-ggsave("figures/WellWatered_phenotype_response_to_soilinoculum_w_controls.png", WellWatered_pheno_soilinoculum_w_controls, width = 16, height = 6)

@@ -121,14 +121,14 @@ drt.fungi.late_phylum_relab <- transform_sample_counts(drt.fungi.late_phylum, fu
 drt.fungi.late_class_relab <- transform_sample_counts(drt.fungi.late_class, function(x) x/sum(x))
 # Take only the n number of taxa per taxonomic rank based on relative abundance.
 # Taxa >n will be added to a other label.
-drt.fungi.late_phylum_relab_top10 <- fantaxtic::get_top_taxa(physeq_obj = drt.fungi.late_phylum_relab, n = 10, relative = TRUE, discard_other = FALSE, other_label = "Other")
-drt.fungi.late_class_relab_top10 <- fantaxtic::get_top_taxa(physeq_obj = drt.fungi.late_class_relab, n = 10, relative = TRUE, discard_other = FALSE, other_label = "Other")
+drt.fungi.late_phylum_relab_top10 <- fantaxtic::get_top_taxa(physeq_obj = drt.fungi.late_phylum_relab, n = 10, relative = TRUE, discard_other = FALSE, other_label = "Low Abundance Taxa")
+drt.fungi.late_class_relab_top10 <- fantaxtic::get_top_taxa(physeq_obj = drt.fungi.late_class_relab, n = 10, relative = TRUE, discard_other = FALSE, other_label = "Low Abundance Taxa")
 # Melt data frame with phyloseq function for plotting.
 phylum_top10 <- psmelt(drt.fungi.late_phylum_relab_top10)
 class_top10 <- psmelt(drt.fungi.late_class_relab_top10)
 # Reorder levels to put other to the end, otherwise taxa are in alphabetical order.
-phylum_top10$Phylum <- forcats::fct_relevel(as.factor(phylum_top10$Phylum), "Other", after = Inf)
-class_top10$Class <- forcats::fct_relevel(as.factor(class_top10$Class), "Other", after = Inf)
+phylum_top10$Phylum <- forcats::fct_relevel(as.factor(phylum_top10$Phylum), "Low Abundance Taxa", after = Inf)
+class_top10$Class <- forcats::fct_relevel(as.factor(class_top10$Class), "Low Abundance Taxa", after = Inf)
 # Relative abundance stats
 # Phyla
 levels(as.factor(phylum_top10$Phylum))
@@ -503,11 +503,26 @@ Class_top10_ordered$plot_order <- rep(rank(-Class_top10_ordered$Abundance[Class_
 Class_top10_ordered$plot_order <- factor(Class_top10_ordered$plot_order)
 Class_top10_ordered$Class <- factor(Class_top10_ordered$Class, levels = c("Eurotiomycetes", "Dothideomycetes", "Leotiomycetes", "Malasseziomycetes", "Microbotryomycetes", "Mortierellomycetes", "Pezizomycetes", "Sordariomycetes", "unidentified", "Other"))
 
+# Fixing labeling and order issues for facets
+Class_top10_ordered <- Class_top10_ordered %>%
+  mutate(Drought.or.Watered = fct_recode(as.factor(Drought.or.Watered), 
+                                         Drought = "D",
+                                         "Well-Watered" = "W"))
+Class_top10_ordered <- Class_top10_ordered %>%
+  mutate(SoilInoculum = fct_recode(as.factor(SoilInoculum), 
+                                   `HAY[P]` = "HAY_Native",
+                                   `KNZ[P]` = "KNZ_Native",
+                                   `SVR[Ag]` = "SVR_Agriculture",
+                                   `SVR[P]` = "SVR_Native",
+                                   `TLI[Ag]` = "TLI_Agriculture",
+                                   `TLI[P]` = "TLI_Native"))
+Class_top10_ordered$SoilInoculum <- factor(Class_top10_ordered$SoilInoculum, levels = c("SVR[Ag]", "SVR[P]", "HAY[P]", "TLI[Ag]", "TLI[P]", "KNZ[P]"))
+
 a <- ggplot(Class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   ylab("Relative abundance") +
   xlab("sample") +
-  facet_wrap(~Drought.or.Watered, scale = "free", nrow = 2) +
+  facet_wrap(~Drought.or.Watered + SoilInoculum, scale = "free_x", nrow = 2, labeller = label_parsed) +
   scale_fill_manual(values=taxa_palette) + guides(fill=guide_legend(nrow=5, byrow=TRUE))+
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
@@ -521,20 +536,14 @@ a <- ggplot(Class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Class)) +
 drt.fungi.dbRDA <- ordinate(drt.fungi.late.clr, distance = 'euclidean', method = 'RDA', formula=~Drought.or.Watered+Condition(Plate + logObs))
 anova.cca(drt.fungi.dbRDA)
 #Color and shape of plotted points by soil habitat
-b <- plot_ordination(drt.fungi.late.clr,drt.fungi.dbRDA,color = 'Drought.or.Watered') + geom_point(size=3) + scale_color_manual(values = treatment_pallete, name = "Treatment")
+b <- plot_ordination(drt.fungi.late.clr,drt.fungi.dbRDA,color = 'Drought.or.Watered') + geom_point(size=3) + scale_color_manual(values = treatment_pallete, name = "Treatment", labels = c("Drought (D)", "Well-Watered (W)"))
 b <- b + annotate("text", x = 3, y = 5, label = "Treatment p = 0.18", fontface = 'italic')
-
-
-
+b <- b + guides(color = guide_legend(nrow = 2))
 # Random forest prediction for treatment
 c <- readRDS("./Intermediate_data/RF_CM_Treatment_CV10_300trees_rand_split.rds")
 c <- c$CMatrixPLOT
-
-
 part <- ggarrange(b,c, ncol = 1, heights = c(1,0.85), labels = c("B","C"))
-
-fig3_def <- ggarrange(a ,part, ncol = 2, widths = c(1,0.75), labels = c("A"))
-
+fig5_def <- ggarrange(a ,part, ncol = 2, widths = c(1.3,0.55), labels = c("A"))
 ggsave("figures/figure5_panels_abc.svg", fig3_def, height = 6, width = 10)
 ggsave("figures/figure5_panels_abc.png", fig3_def, height = 6, width = 10)
 
