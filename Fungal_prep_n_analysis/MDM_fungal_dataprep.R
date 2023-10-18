@@ -1,6 +1,6 @@
 # Analysis of maize B73 and Mo17 inoculated plants under drought stress
 # Samples were collected from a greenhouse study in Feb 2020
-# Microbiomes are from the root compartment (rhizosphere/endosphere)
+# Microbiomes are from the root compartment (endosphere)
 # Growth measurements were also recorded throughout the experiment (~50 days in length)
 # Code by: Maggie Wagner & Joel Swift
 
@@ -26,8 +26,6 @@ plants$RepID <- as.factor(plants$RepID)
 # Merge together:
 smd <- right_join(plants,smd,by=c('RepID'='Plant_ID'))
 smd$SampleID <- str_replace_all(smd$SampleID,'_','-') # replace _ with - for compatibility with sequencing output
-# Make new column to combine SoilLocation and SoilHabitat
-smd$SoilInoculum <- factor(paste0(smd$SoilLocation,"_",smd$SoilHabitat))
 rownames(smd) <- smd$SampleID # make the sample IDs the row names for import into Phyloseq
 
 ####### Load ASV table and taxa info #######
@@ -36,9 +34,12 @@ tax <- read.delim('../Raw_data_n_metadata/taxa_fungi.txt',sep='\t',header=TRUE)
 
 ####### Make Phyloseq object #######
 fdrt <- phyloseq(otu_table(ASV,taxa_are_rows=FALSE),tax_table(as.matrix(tax)),sample_data(smd))
-nsamples(fdrt)# 435 samples
+# remove agricultural soil sites
+fdrt <- subset_samples(fdrt, SoilHabitat != "Agriculture")
+# Stats
+nsamples(fdrt)# 282 samples
 ntaxa(fdrt) # 1699 ASVs
-sum(taxa_sums(fdrt))# 25212017 reads
+sum(taxa_sums(fdrt))# 16696929 reads
 
 # Save original phyloseq object:
 saveRDS(fdrt,'Intermediate_data/phyloseq_f_original.RDS')
@@ -57,7 +58,7 @@ tax_table(fdrt) <-  gsub(tax_table(fdrt)[, colnames(tax_table(fdrt))], pattern =
 # Remove ASVs unclassified at Kingdom level 
 fdrt.nobadASVs<- subset_taxa(fdrt, Kingdom == 'Fungi')
 ntaxa(fdrt.nobadASVs) # 980 ASVs remain
-sample_data(fdrt.nobadASVs)$UsableReads<-sample_sums(fdrt.nobadASVs)
+sample_data(fdrt.nobadASVs)$UsableReads <- sample_sums(fdrt.nobadASVs)
 
 ####### Calculate alpha diversity before thresholding: #######
 # Calculate alpha diversity and add to data frame:
@@ -74,67 +75,66 @@ sample_data(fdrt.nobadASVs) <- smd  # update in phyloseq object
 ####### Across-sample thresholding: 5x25 (throw out "non-reproducible" ASVs) #######
 threshold<-kOverA(5,A=25) # set threshold values (require k samples with A reads)
 fdrt.nobadASVs.thresholded<-filter_taxa(fdrt.nobadASVs,threshold,TRUE)
-ntaxa(fdrt.nobadASVs.thresholded) # 88 ASVs remain
+ntaxa(fdrt.nobadASVs.thresholded) # 69 ASVs remain
 ntaxa(fdrt.nobadASVs) # 980 ASVs originally
 # What proportion of original reads remain?
 sum(taxa_sums(fdrt.nobadASVs.thresholded))/(sum(taxa_sums(fdrt.nobadASVs)))
-# 95.2% of reads remain after thresholding
+# 94.5% of reads remain after thresholding
 
 ####### Remove samples with <400 usable reads #######
-fdrt.nobadASVs.thresholded.highcoverage<-subset_samples(fdrt.nobadASVs.thresholded,UsableReads>=400) %>% prune_taxa(taxa_sums(.)>0,.)
-nsamples(fdrt.nobadASVs.thresholded.highcoverage) # 188 samples remain
+fdrt.nobadASVs.thresholded.highcoverage <- subset_samples(fdrt.nobadASVs.thresholded,UsableReads>=400) %>% prune_taxa(taxa_sums(.)>0,.)
+nsamples(fdrt.nobadASVs.thresholded.highcoverage) # 133 samples remain
 
 ####### Save total number of observations in sample metadata #######
 # This is the nuisance variable we will include in statistical models to control for sequencing depth # 
-sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs<-sample_sums(fdrt.nobadASVs.thresholded.highcoverage) # add up "good" ASV observations in each sample
-sample_data(fdrt.nobadASVs.thresholded.highcoverage)$logObs<-log(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs) # store natural log of "good" ASV observations
+sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs <- sample_sums(fdrt.nobadASVs.thresholded.highcoverage) # add up "good" ASV observations in each sample
+sample_data(fdrt.nobadASVs.thresholded.highcoverage)$logObs <- log(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs) # store natural log of "good" ASV observations
 
 # how many observations in main dataset?
-sum(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs) # total = 8392089 reads
-mean(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs) # mean = 44638 observations
-sd(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs) # sd = 107941
-ntaxa(fdrt.nobadASVs.thresholded.highcoverage) # 88 ASVs 
+sum(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs) # total = 5963181 reads
+mean(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs) # mean = 44836 observations
+sd(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs) # sd = 118238
+ntaxa(fdrt.nobadASVs.thresholded.highcoverage) # 69 ASVs 
 sqrt(var(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs) /
-       length(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs)) # SE = 7872 sqrt(var(X) / length(X))
+       length(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Obs)) # SE = 10253 sqrt(var(X) / length(X))
 
 # how many observations in late dataset?
 temp_late <- prune_samples(sample_data(fdrt.nobadASVs.thresholded.highcoverage)$Timepoint == "late", fdrt.nobadASVs.thresholded.highcoverage)
-mean(sample_data(temp_late)$Obs) # mean = 39334 observations
-sd(sample_data(temp_late)$Obs) # sd = 88066
+mean(sample_data(temp_late)$Obs) # mean = 41081 observations
+sd(sample_data(temp_late)$Obs) # sd = 99241
 sqrt(var(sample_data(temp_late)$Obs) /
-       length(sample_data(temp_late)$Obs)) # SE = 7636 sqrt(var(X) / length(X))
+       length(sample_data(temp_late)$Obs)) # SE = 10129 sqrt(var(X) / length(X))
 
 ####### Quick unconstrained ordination to check for outliers #######
 # transform ASV counts to proportions / relative abundance and ordinate:
-drt.fungi.prop <- transform_sample_counts(subset_samples(fdrt.nobadASVs.thresholded.highcoverage,SoilInoculum!='NA_NA'),function(ASV) ASV/sum(ASV))
+drt.fungi.prop <- transform_sample_counts(fdrt.nobadASVs.thresholded.highcoverage, function(ASV) ASV/sum(ASV))
 # Ordinate:
-pcoa.drt.fungi.prop <- ordinate(drt.fungi.prop,method='CAP',distance='bray',formula=~SoilInoculum*Drought.or.Watered+Condition(log(UsableReads)))
+pcoa.drt.fungi.prop <- ordinate(drt.fungi.prop,method='CAP',distance='bray',formula=~SoilLocation*Drought.or.Watered+Condition(log(UsableReads)))
 # Visualize quick ordination:
-plot_ordination(drt.fungi.prop, pcoa.drt.fungi.prop,color='SoilInoculum',shape='SoilHabitat') +
+plot_ordination(drt.fungi.prop, pcoa.drt.fungi.prop,color='SoilLocation',shape='SoilHabitat') +
   facet_wrap(~Drought.or.Watered)+
   scale_color_manual(values=c('black','sky blue','forest green','magenta','goldenrod','darkorchid2','cadetblue'))+
   theme_classic()# no extreme outliers
 
 with(as(sample_data(drt.fungi.prop),'data.frame'),
-     adonis2(as(otu_table(drt.fungi.prop),'matrix') ~ SoilInoculum*Drought.or.Watered,
+     adonis2(as(otu_table(drt.fungi.prop),'matrix') ~ SoilLocation*Drought.or.Watered*Genotype,
              strata = Plate, data=as(sample_data(drt.fungi.prop),'data.frame')))
-
-"                                 Df SumOfSqs      R2      F Pr(>F)    
-SoilInoculum                      6    7.099 0.10991 3.6522  0.001 ***
-Drought.or.Watered                1    0.446 0.00690 1.3759  0.125    
-SoilInoculum:Drought.or.Watered   6    2.296 0.03555 1.1814  0.124    
-Residual                        169   54.753 0.84764                  
-Total                           182   64.594 1.00000"
+"                                          Df SumOfSqs      R2      F Pr(>F)    
+SoilLocation                               4    5.456 0.11952 4.4425  0.001 ***
+Drought.or.Watered                         1    0.496 0.01086 1.6148  0.115    
+Genotype                                   1    0.483 0.01059 1.5744  0.081 .  
+SoilLocation:Drought.or.Watered            4    1.667 0.03651 1.3570  0.050 *  
+SoilLocation:Genotype                      4    1.587 0.03476 1.2920  0.106    
+Drought.or.Watered:Genotype                1    0.304 0.00667 0.9911  0.575    
+SoilLocation:Drought.or.Watered:Genotype   3    0.655 0.01435 0.7111  0.883    
+Residual                                 114   35.002 0.76675                  
+Total                                    132   45.650 1.00000 "
 
 # Clean up
 rm(pcoa.drt.fungi.prop,drt.fungi.prop)
 
-####### Separate out controls from samples #######
-fdrt.controls <- subset_samples(fdrt.nobadASVs.thresholded.highcoverage,Type %in% c('neg_control','pos_control')) %>% prune_taxa(taxa_sums(.)>0,.)
-fdrt.nobadASVs.thresholded.roots <- subset_samples(fdrt.nobadASVs.thresholded.highcoverage,Type=='root' & SoilInoculum!='NA_NA') %>% prune_taxa(taxa_sums(.)>0,.)
-
 ####### Extract sample data for "final" dataset #######
-drt.fungi <- fdrt.nobadASVs.thresholded.roots # rename final phyloseq object
+drt.fungi <- fdrt.nobadASVs.thresholded.highcoverage # rename final phyloseq object
 smd.fungi <- as(sample_data(drt.fungi),'data.frame')
 smd.fungi$SampleID <- row.names(smd.fungi) # Store Sample IDs as a column
 summary(smd.fungi) # Make sure everything looks right
@@ -144,10 +144,6 @@ smd.fungi <- mutate(smd.fungi, logObs.z = (logObs-mean(logObs))/sd(logObs))
 row.names(smd.fungi) <- smd.fungi$SampleID
 # Add back into phyloseq object:
 sample_data(drt.fungi) <- smd.fungi
-
-####### Get list of ASVs for Venn diagram ########
-ASV_sequences.vec <- colnames(otu_table(drt.fungi))
-write.csv(ASV_sequences.vec, "Intermediate_data/ASV_list_for_venn_diagram_root_ITS.csv")
 
 ####### Relabel ASVs for convenience #######
 tax <- as(tax_table(drt.fungi),'matrix')
@@ -182,14 +178,12 @@ for (i in 1:ncol(ASV)) {
 drt.fungi <- phyloseq(otu_table(ASV,taxa_are_rows=FALSE),tax_table(as(tax,'matrix')))
 # Add back into phyloseq object:
 sample_data(drt.fungi) <- smd.fungi
-
 # Save cleaned dataset to file:
 saveRDS(drt.fungi,'Intermediate_data/phyloseq_f_asv_clean_allRoots.RDS')
 ####### Separate out uninoculated controls #######
-drt.fungi.uninoculated <- subset_samples(drt.fungi,SoilInoculum=='Control_Control')
+drt.fungi.uninoculated <- subset_samples(drt.fungi, SoilLocation=='Control')
 saveRDS(drt.fungi.uninoculated,'Intermediate_data/phyloseq_f_asv_clean_uninoculated.RDS')
-
-drt.fungi.inoculated <- subset_samples(drt.fungi,!(SoilInoculum%in%c('Control_Control','NA_NA')))
+drt.fungi.inoculated <- subset_samples(drt.fungi, SoilLocation !='Control')
 saveRDS(drt.fungi.inoculated,'Intermediate_data/phyloseq_f_asv_clean_inoculated.RDS')
 
 ####### Define function to extract median CLR-transformed value for each cell in ASV table #######

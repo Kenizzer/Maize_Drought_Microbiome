@@ -1,21 +1,19 @@
 # Analysis of maize B73 and Mo17 inoculated plants under drought stress
 # Samples were collected from a greenhouse study in Feb 2020
-# Microbiomes are from the root compartment (rhizosphere/endosphere)
+# Microbiomes are from the root compartment (endosphere)
 # Growth measurements were also recorded throughout the experiment (~50 days in length)
-# Code by: Joel Swift
+# Code by: Maggie Wagner, Matthew Kolp, Joel Swift
 
 #### Design of experiment ####
-
 # 2 genotypes: B73 / Mo17
 # 2 treatments: Well watered / Drought
-# 6 soil inoculates (Soil location:habitat):
-
-## Smoky Valley Ranch - SVR (Grain field and Prairie)
-## Hays Prairie - HAY (Prairie)
-## The Land Institute - TLI (Grain field and Prairie)
-## Konza Prairie - KZ (Prairie)
-
+# 4 soil inoculates
+## Smoky Valley Ranch - SVR
+## Hays Prairie - HAY
+## The Land Institute - TLI
+## Konza Prairie - KNZ
 ###
+
 
 # Packages w/ version numbers.
 library('tidyverse'); packageVersion('tidyverse')
@@ -33,13 +31,6 @@ library("matrixStats"); packageVersion("matrixStats")
 
 # Theme set and Color Palettes
 theme_set(theme_pubr())
-genotype_pallete <- c("B73" = "#91ff26", "Mo17" = "#9426ff")# B73/Mo17 - Genotype
-treatment_pallete <- c("W" = "#0000FF", "D" = "#DAA520") # Drought/WW     - Treatment
-habitat_pallete <- c("Agriculture" = "#332288", "Native" = "#44AA99") # Native/Ag.     - Soil habitat
-location_pallete <- c("SVR" = "#88CCEE", "HAY" = "#CC6677", "TLI" = "#DDCC77", "KNZ" = "#117733") # SVR/HAY/TLI/KNZ - Soil location
-soil_merged_pallete<- c("SVR_Agriculture" = "#780c72","SVR_Native" = "#de3a68", "HAY_Native" = "#f5805d",
-                        "TLI_Agriculture" = "#ffe785", "TLI_Native" = "#7fd66f", "KNZ_Native" = "#3ba150") # Combination of Soil habitat and location, colors from https://lospec.com/palette-list/zencillo14
-
 class_palette <- c("Eurotiomycetes" = "#88CCEE", "Dothideomycetes" = "#CC6677",
                    "Leotiomycetes" = "#DDCC77", "Malasseziomycetes" = "#AA4499",
                    "Microbotryomycetes" = "#999933", "Mortierellomycetes" = "#44AA99",
@@ -112,36 +103,35 @@ MachineLearning_RF_ranger <- function(PHYSEQ_OBJ_1, GROUPING, TREES) {
   # Format ASV table to be used for machine learning applications and make metadata df
   ASV.df <- t(ASV.df)
   # Shorten metadata table
-  #colnames(ASV_metadata.df)
   ASV_meta.df <- data.frame(Sample = rownames(ASV_metadata.df), SoilLocation = ASV_metadata.df$SoilLocation, SoilHabitat = ASV_metadata.df$SoilHabitat, 
-                            Drought.or.Watered = ASV_metadata.df$Drought.or.Watered, Genotype = ASV_metadata.df$Genotype, SoilInoculum = ASV_metadata.df$SoilInoculum)
+                            Drought.or.Watered = ASV_metadata.df$Drought.or.Watered, Genotype = ASV_metadata.df$Genotype)
   ASV_prefiltered.df <- cbind(ASV.df, ASV_meta.df)
   # 129 samples
   # 80% for train set
-  set.seed(1095678254)
-  train_index <- as.data.frame(ASV_prefiltered.df %>% sample_n(103))
+  set.seed(1095678233)
+  train_index <- as.data.frame(ASV_prefiltered.df %>% sample_n(73))
   rownames(train_index) <- train_index$Sample
   train_index <- match(rownames(train_index), rownames(ASV_prefiltered.df))
   train_x <- as.data.frame(ASV.df[train_index, ])
   test_y <- as.data.frame(ASV.df[-train_index, ])
-  dim(train_x) #158
-  dim(test_y) #40
-  # Train set, 474
+  dim(train_x) #73
+  dim(test_y) #19
+  # Train set
   train_x$Sample <- rownames(train_x)
   Training_meta.df <- merge(train_x, ASV_meta.df, by = 'Sample')
-  train_x <- subset(Training_meta.df, select = -c(SoilLocation, SoilHabitat, Drought.or.Watered, Genotype, SoilInoculum))
+  train_x <- subset(Training_meta.df, select = -c(SoilLocation, SoilHabitat, Drought.or.Watered, Genotype))
   rownames(train_x) <- train_x$Sample
   train_x <- subset(train_x, select = -c(Sample))
-  Training_meta.df <- subset(Training_meta.df, select = c(Sample, SoilLocation, SoilHabitat, Drought.or.Watered, Genotype, SoilInoculum))
+  Training_meta.df <- subset(Training_meta.df, select = c(Sample, SoilLocation, SoilHabitat, Drought.or.Watered, Genotype))
   rownames(Training_meta.df) <- Training_meta.df$Sample 
-  # Test set, 120 samples
+  # Test set
   test_y$Sample <- rownames(test_y)
   Testing_meta.df <- merge(test_y, ASV_meta.df, by = "Sample")
-  test_y <- subset(Testing_meta.df, select = -c(SoilLocation, SoilHabitat, Drought.or.Watered, Genotype, SoilInoculum))
+  test_y <- subset(Testing_meta.df, select = -c(SoilLocation, SoilHabitat, Drought.or.Watered, Genotype))
   rownames(test_y) <- test_y$Sample
   test_y <- subset(test_y, select = -c(Sample))
-  Testing_meta.df <- subset(Testing_meta.df, select = c(Sample, SoilLocation, SoilHabitat, Drought.or.Watered, Genotype, SoilInoculum))
-  rownames(Testing_meta.df) <- Testing_meta.df$Sample 
+  Testing_meta.df <- subset(Testing_meta.df, select = c(Sample, SoilLocation, SoilHabitat, Drought.or.Watered, Genotype))
+  rownames(Testing_meta.df) <- Testing_meta.df$Sample  
   # Training model
   Training_grid <- expand.grid(.mtry = seq(10, length(train_x), round(length(train_x)*0.1)), .splitrule= "gini",
                                .min.node.size = c(1, 5, 10))
@@ -207,12 +197,12 @@ Get_taxa_importance <- function(RF_MODEL = NULL, FOLD_MODEL = NULL, TOP_N = 100)
 }
 
 # Function to obtain importance values with taxonomy for ASVs from a list of Ranger random forest fold outputs from caret.
-# This should take ~3 mins per list (its getting almost 8k values from 10 folds).
+# This should take ~3 mins per list
 Extract_importance <- function(list_of_imp = NULL){
   VarI_list<- c()
   for (i in seq(1,10,1)){
     X <- list_of_imp[[i]]$out
-    X <- Get_taxa_importance(FOLD_MODEL = X, TOP_N = 88)
+    X <- Get_taxa_importance(FOLD_MODEL = X, TOP_N = 69)
     VarI_list[[i]]<- X
   }
   return(VarI_list)
@@ -240,24 +230,22 @@ drt.fungi.late.clr <- readRDS('Intermediate_data/phyloseq_f_asv_clean_inoculated
 
 # Running with 10 CV on 80:20 dataspilt
 ## Already Ran
-set.seed(1095678254) # also set above in the ML function
-# RF_CM_Treatment <- MachineLearning_RF_ranger(drt.fungi.late.clr, "Drought.or.Watered", 300)
-# saveRDS(RF_CM_Treatment, "Intermediate_data/RF_CM_Treatment_CV10_300trees_rand_split.rds")
-# RF_CM_SoilInoculum <- MachineLearning_RF_ranger(drt.fungi.late.clr, "SoilInoculum", 300)
-# saveRDS(RF_CM_SoilInoculum, "Intermediate_data/RF_CM_SoilInoculum_CV10_300trees_rand_split.rds")
-# RF_CM_Genotype <- MachineLearning_RF_ranger(drt.fungi.late.clr, "Genotype", 300)
-# saveRDS(RF_CM_Genotype, "Intermediate_data/RF_CM_Genotype_CV10_300trees_rand_split.rds")
+set.seed(1095678233) # also set above in the ML function
+#RF_CM_Treatment <- MachineLearning_RF_ranger(drt.fungi.late.clr, "Drought.or.Watered", 300)
+#saveRDS(RF_CM_Treatment, "Intermediate_data/RF_CM_Treatment_CV10_300trees_rand_split.rds")
+#RF_CM_SoilInoculum <- MachineLearning_RF_ranger(drt.fungi.late.clr, "SoilLocation", 300)
+#saveRDS(RF_CM_SoilInoculum, "Intermediate_data/RF_CM_SoilLocation_CV10_300trees_rand_split.rds")
+#RF_CM_Genotype <- MachineLearning_RF_ranger(drt.fungi.late.clr, "Genotype", 300)
+#saveRDS(RF_CM_Genotype, "Intermediate_data/RF_CM_Genotype_CV10_300trees_rand_split.rds")
 
 # Loading completed ML runs from previous run
 RF_CM_Treatment     <- readRDS("Intermediate_data/RF_CM_Treatment_CV10_300trees_rand_split.rds")
-RF_CM_SoilInoculum  <- readRDS("Intermediate_data/RF_CM_SoilInoculum_CV10_300trees_rand_split.rds")
+RF_CM_SoilInoculum  <- readRDS("Intermediate_data/RF_CM_SoilLocation_CV10_300trees_rand_split.rds")
 RF_CM_Genotype      <- readRDS("Intermediate_data/RF_CM_Genotype_CV10_300trees_rand_split.rds")
 # Confusion Matrix plot for supplement
 a <- RF_CM_Treatment$CMatrixPLOT
 b <- RF_CM_SoilInoculum$CMatrixPLOT 
 # fix labels for soil inoculum
-b <- b + scale_x_discrete(name = "Reference", labels = c(expression(TLI[P]), expression(TLI[Ag]), expression(SVR[P]), expression(SVR[Ag]), expression(KNZ[P]), expression(HAY[P])))
-b <- b + scale_y_discrete(name = "Prediction", labels = c(expression(HAY[P]), expression(KNZ[P]),  expression(SVR[Ag]), expression(SVR[P]), expression(TLI[Ag]), expression(TLI[P])))
 c <- RF_CM_Genotype$CMatrixPLOT
 CM_PLOT <- ggarrange(b,c, nrow = 1, align = "hv", common.legend = TRUE, legend = 'right', labels = "AUTO")
 ggsave("figures/Confusion_matrix_plots.svg", CM_PLOT, width = 8, height = 4)
@@ -270,15 +258,15 @@ RF_CM_Genotype$RF_model
 
 # Optimal hyperparameters 
 "factor mtry  min.node.size
-Treatment 64 10
-Soil Inoculum 46 5
+Treatment 45 10
+Soil Inoculum 66 1
 Genotype  10  1
 "
 
 # Plotting ASVs that aid in predictions of the main effects
 # Load a list of files to get mean and standard error for the OOB samples
 # Treatment
-files <- list.files(path = "./rangerML_stats/treatment/", pattern = ".*64_gini_10.*")
+files <- list.files(path = "./rangerML_stats/treatment/", pattern = ".*59_gini_5.*")
 files <- paste("./rangerML_stats/treatment/", files, sep = "")
 RF_list_treatment <- lapply(files, function(x) mget(load(x)))
 RF_list_treatment <- Extract_importance(RF_list_treatment)
@@ -290,8 +278,8 @@ colnames(RF_list_treatment)[20] <- "mean"
 RF_list_treatment <- plyr::join(data.frame('ASV' = rownames(drt.fungi.late.clr@tax_table)), RF_list_treatment) # Fix to adjust order of dataframe to match phyloseq_taxtable
 RF_list_treatment$ASV_numb <- paste("ASV", rownames(RF_list_treatment))
 # SoilInoculum
-files <- list.files(path = "./rangerML_stats/soil_inoculum/", pattern = ".*46_gini_5.*")
-files <- paste("./rangerML_stats/soil_inoculum/", files, sep = "")
+files <- list.files(path = "./rangerML_stats/soil_location/", pattern = ".*66_gini_1.*")
+files <- paste("./rangerML_stats/soil_location/", files, sep = "")
 RF_list_soil_inoculum <- lapply(files, function(x) mget(load(x)))
 RF_list_soil_inoculum <- Extract_importance(RF_list_soil_inoculum)
 RF_list_soil_inoculum <- merge_imp(RF_list_soil_inoculum)
