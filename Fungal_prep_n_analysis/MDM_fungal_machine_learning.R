@@ -307,18 +307,21 @@ a <- ggplot(RF_list_treatment[RF_list_treatment$mean > 0.001, ], aes(x= mean, y 
   geom_col() +
   scale_fill_manual(values = class_palette) +
   geom_errorbar(aes(xmin=mean - SD/sqrt(length(mean)), xmax=mean + SD/sqrt(length(mean))), width=.2) +
+  scale_x_continuous(labels = scales::number_format(accuracy = 0.001)) +
   xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
 
 b <- ggplot(RF_list_soil_inoculum[RF_list_soil_inoculum$mean > 0.001, ], aes(x= mean, y = reorder(ASV_numb, mean), fill = Class)) +
   geom_col() +
   scale_fill_manual(values = class_palette) +
   geom_errorbar(aes(xmin=mean - SD/sqrt(length(mean)), xmax=mean + SD/sqrt(length(mean))), width=.2) +
+  scale_x_continuous(labels = scales::number_format(accuracy = 0.001)) +
   xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
 
 c <- ggplot(RF_list_genotype[RF_list_genotype$mean > 0.001, ], aes(x= mean, y = reorder(ASV_numb, mean), fill = Class)) +
   geom_col() +
   scale_fill_manual(values = class_palette) +
   geom_errorbar(aes(xmin=mean - SD/sqrt(length(mean)), xmax=mean + SD/sqrt(length(mean))), width=.2) +
+  scale_x_continuous(labels = scales::number_format(accuracy = 0.001)) +
   xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
 
 # Combination plot
@@ -327,5 +330,5 @@ ggarrange(a,b,c, nrow = 1, common.legend = TRUE, labels = c("Treatment","Soil In
 # Supplement or main? 
 ASVs_deciding_ML <- ggarrange(a,b,c, nrow = 1, common.legend = TRUE, labels = c("AUTO"), align = "hv", legend = "right")
 
-ggsave("./figures/Important_ASV_by_factor.svg", ASVs_deciding_ML, width = 12, height = 6)
-ggsave("./figures/Important_ASV_by_factor.png", ASVs_deciding_ML, width = 12, height = 6)
+ggsave("./figures/FigureS15_Important_ASV_by_factor.svg", ASVs_deciding_ML, width = 12, height = 6)
+ggsave("./figures/FigureS15_Important_ASV_by_factor.png", ASVs_deciding_ML, width = 12, height = 6)

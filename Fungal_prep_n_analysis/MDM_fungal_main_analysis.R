@@ -60,6 +60,9 @@ rand(drt.fungi.late.z.richness)
 rand(drt.fungi.late.Shannon) # Plate significant
 rand(drt.fungi.late.InvSimpson) # Plate significant 
 # Posthocs
+emmeans(drt.fungi.late.Shannon, ~ Drought.or.Watered)
+emmeans(drt.fungi.late.InvSimpson, ~ Drought.or.Watered)
+
 pairs(emmeans(drt.fungi.late.Shannon, ~ Drought.or.Watered))
 pairs(emmeans(drt.fungi.late.InvSimpson, ~ Drought.or.Watered))
 
@@ -100,6 +103,14 @@ fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "Genotype:SoilLocation:D
     sum(fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$Family == "Aspergillaceae", ]$sumsq)) * 100 # 62.6% variance explained
 (fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$Family == "Mucoraceae", ]$sumsq[2] /
     sum(fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$Family == "Mucoraceae", ]$sumsq)) * 100 # 47.8% variance explained
+
+# Stats for two ML ASVs
+# ASV 46, 47, 55
+ML_relab <- transform_sample_counts(drt.fungi.late, function(x) x/sum(x))
+ML_relab_df <- psmelt(ML_relab)
+tapply(ML_relab_df[ML_relab_df$OTU == "fASV_4",]$Abundance, ML_relab_df[ML_relab_df$OTU == "fASV_4",]$Drought.or.Watered, summary)
+tapply(ML_relab_df[ML_relab_df$OTU == "fASV_5",]$Abundance, ML_relab_df[ML_relab_df$OTU == "fASV_5",]$Drought.or.Watered, summary)
+
 
 
 #### Taxonomic barplots ####

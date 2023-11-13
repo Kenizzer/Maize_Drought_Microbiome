@@ -210,6 +210,9 @@ plot(resid(mdsi.16S.InvSimp)~fitted(mdsi.16S.InvSimp))
 #posthocs
 summary(emmeans(mdsi.16S.z.richness,~Location), type = "response") # back transformed
 pairs(emmeans(mdsi.16S.z.richness,~Location))
+summary(emmeans(mdsi.16S.z.richness,~Type), type = "response") # back transformed
+
+
 
 summary(emmeans(mdsi.16S.shannon,~Location), type = "response") # back transformed
 pairs(emmeans(mdsi.16S.shannon,~Location))
@@ -218,6 +221,7 @@ pairs(emmeans(mdsi.16S.shannon,~Type))
 
 summary(emmeans(mdsi.16S.InvSimp,~Location), type = "response") # back transformed
 pairs(emmeans(mdsi.16S.InvSimp,~Location))
+summary(emmeans(mdsi.16S.InvSimp,~Type), type = "response") # back transformed
 
 # emmeans plots
 a <- ggplot(plot(emmeans(mdsi.16S.z.richness,~Location, type = "response"), plotit = FALSE), aes(x = pri.fac, y = the.emmean, color = pri.fac)) +

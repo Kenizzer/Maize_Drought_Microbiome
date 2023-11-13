@@ -111,6 +111,15 @@ family_relab <- psmelt(drt.bact.late_family_relab)
 tapply(family_relab[family_relab$Family == "Sphingomonadaceae",]$Abundance, family_relab[family_relab$Family == "Sphingomonadaceae",]$Drought.or.Watered, summary)
 tapply(family_relab[family_relab$Family == "Nocardiaceae",]$Abundance, family_relab[family_relab$Family == "Nocardiaceae",]$SoilLocation, summary)
 
+# Stats for three ML ASVs
+# ASV 46, 47, 55
+ML_relab <- transform_sample_counts(drt.bact.late, function(x) x/sum(x))
+ML_relab_df <- psmelt(ML_relab)
+tapply(ML_relab_df[ML_relab_df$OTU == "bASV_46",]$Abundance, ML_relab_df[ML_relab_df$OTU == "bASV_46",]$Drought.or.Watered, summary)
+tapply(ML_relab_df[ML_relab_df$OTU == "bASV_47",]$Abundance, ML_relab_df[ML_relab_df$OTU == "bASV_47",]$Drought.or.Watered, summary)
+tapply(ML_relab_df[ML_relab_df$OTU == "bASV_55",]$Abundance, ML_relab_df[ML_relab_df$OTU == "bASV_55",]$Drought.or.Watered, summary)
+
+
 #### Taxonomic barplots ####
 # Use non-transformed data for relative abundance taxonomic barplots
 drt.bact.late_class <- phyloseq::tax_glom(drt.bact.late, "Class") # 21 taxa

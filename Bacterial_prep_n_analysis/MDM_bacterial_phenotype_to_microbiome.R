@@ -171,14 +171,15 @@ emtrends(mod, ~Drought.or.Watered, var = "Abundance")
 
 Strep_interaction_plot <- filter(drt.bact.late.clr_fam, Family == "Streptococcaceae") %>%
   ggplot(aes(x = Abundance, y = ShootMassRateResid, color = Drought.or.Watered)) +
-  xlab("CLR Transformed Abundance") +
+  xlab("CLR Transformed Abundance") + ylab("Residual Shoot Mass Rate (g/day)") +
   geom_point() +
   geom_smooth(method = "lm") +
-  scale_color_manual(name = "Treatment", values = treatment_pallete) +
+  scale_color_manual(name = "Treatment", values = treatment_pallete, labels = c("Drought", "Well-Watered")) +
   annotate("text", x = 8, y = 0.040, label = "W = -0.0039", fontface = 'italic') +
   annotate("text", x = 8, y = 0.035, label = "D =  0.0001", fontface = 'italic') +
   annotate("text", x = 8, y = 0.030, label = "PVEres = 5.05", fontface = 'italic') +
-  annotate("text", x = 8, y = 0.025, label = "Abund.×DT q = 0.02", fontface = 'italic')
+  annotate("text", x = 8, y = 0.025, label = "Abund.×DT q = 0.02", fontface = 'italic') +
+  theme(legend.position = 'right')
 
 ggsave("figures/Streptococcaceae_interaction_plot.svg", Strep_interaction_plot, height = 6, width = 6)
 ggsave("figures/Streptococcaceae_interaction_plot.png", Strep_interaction_plot, height = 6, width = 6)
