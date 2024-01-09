@@ -24,9 +24,8 @@ soils$RepID <- as.factor(soils$RepID)
 # Merge together:
 smd <- right_join(soils,smd,by=c('RepID'='Soil_ID'))
 smd$Sample_ID <- str_replace_all(smd$Sample_ID,'_','-') # replace _ with - for compatibility with sequencing output
-# Make 2 new columns to combine soil Location, Land_use, and Type; and Location and Land_use
-smd$SoilHabitat <- factor(paste0(smd$Location,"_",smd$Land_use, "_", smd$Type))
-smd$SoilSource <- factor(paste0(smd$Location, "_",smd$Land_use))
+# Make new column to combine soil Location and Type
+smd$SoilSource <- factor(paste0(smd$Location, "_",smd$Type))
 smd <- as.data.frame(smd)
 rownames(smd) <- smd$Sample_ID # make the sample IDs the row names for import into Phyloseq
 
@@ -36,6 +35,8 @@ tax <- read.delim('./Intermediate_data/16S_taxa_bacteria.txt',sep='\t',header=TR
 
 ####### Make Phyloseq object #######
 bdrt <- phyloseq(otu_table(ASV,taxa_are_rows=FALSE),tax_table(as.matrix(tax)),sample_data(smd))
+# Remove ag samples
+bdrt <- subset_samples(bdrt, Land_use != "Agriculture")
 ntaxa(bdrt) # 23059 ASVs
 
 # Save original phyloseq object:
@@ -43,10 +44,10 @@ saveRDS(bdrt,'./Intermediate_data/phyloseq_b_original.RDS')
 
 ####### Look for plant contamination: #######
 plantASVs <- subset_taxa(bdrt,Family=='mitochondria' | str_detect(Class,'Chloroplast')) 
-sum(taxa_sums(plantASVs)) # 5155 observations
-sum(taxa_sums(bdrt)) # out of 3939854 = 0.13% plant contamination
+sum(taxa_sums(plantASVs)) # 1850 observations
+sum(taxa_sums(bdrt)) # out of 3033502 = 0.06% plant contamination
 ntaxa(bdrt) # 23059 ASVs
-nsamples(bdrt) # 65 samples
+nsamples(bdrt) # 47 samples
 
 ####### Remove bad ASVs and record usable reads for each sample #######
 # Remove ASVs unclassified at Kingdom level + mitochondria + chloroplast
@@ -68,15 +69,15 @@ sample_data(bdrt.nobadASVs) <- smd  # update in phyloseq object
 ####### Across-sample thresholding: 5x25 (throw out "non-reproducible" ASVs) #######
 threshold<-kOverA(5,A=25) # set threshold values (require k samples with A reads)
 bdrt.nobadASVs.thresholded<-filter_taxa(bdrt.nobadASVs,threshold,TRUE)
-ntaxa(bdrt.nobadASVs.thresholded) # 882 ASVs remain
+ntaxa(bdrt.nobadASVs.thresholded) # 750 ASVs remain
 ntaxa(bdrt.nobadASVs) # 11146 ASVs originally
 # What proportion of original reads remain?
 sum(taxa_sums(bdrt.nobadASVs.thresholded))/(sum(taxa_sums(bdrt.nobadASVs)))
-# 69.2% of reads remain after thresholding
+# 71.6% of reads remain after thresholding
 
 ####### Remove samples with <400 usable reads #######
 bdrt.nobadASVs.thresholded.highcoverage<-subset_samples(bdrt.nobadASVs.thresholded,UsableReads>=400) %>% prune_taxa(taxa_sums(.)>0,.)
-nsamples(bdrt.nobadASVs.thresholded.highcoverage) # 61 samples remain
+nsamples(bdrt.nobadASVs.thresholded.highcoverage) # 44 samples remain
 
 ####### Save total number of observations in sample metadata #######
 # This is the nuisance variable we will include in statistical models to control for sequencing depth # 
@@ -84,48 +85,44 @@ sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs<-sample_sums(bdrt.nobad
 sample_data(bdrt.nobadASVs.thresholded.highcoverage)$logObs<-log(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs) # store natural log of "good" ASV observations
 
 # how many observations in main dataset?
-sum(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs) # total = 1472939 reads
-mean(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs) # mean = 24146.54 observations
-sd(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs) # sd = 26223.75
-ntaxa(bdrt.nobadASVs.thresholded.highcoverage) # 882 ASVs 
+sum(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs) # total = 1105088 reads
+mean(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs) # mean = 25115.64 observations
+sd(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs) # sd = 24699.16
+ntaxa(bdrt.nobadASVs.thresholded.highcoverage) # 750 ASVs 
 sqrt(var(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs) /
-       length(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs)) # SE = 3357.607 sqrt(var(X) / length(X))
+       length(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Obs)) # SE = 3723.538 sqrt(var(X) / length(X))
 
 # how many observations in Inocula dataset? 
 temp_Inocula <- prune_samples(sample_data(bdrt.nobadASVs.thresholded.highcoverage)$Type == "Inocula", bdrt.nobadASVs.thresholded.highcoverage)
-mean(sample_data(temp_Inocula)$Obs) # mean = 25777.45 observations
-sd(sample_data(temp_Inocula)$Obs) # sd = 29961.84
+mean(sample_data(temp_Inocula)$Obs) # mean = 24326.43 observations
+sd(sample_data(temp_Inocula)$Obs) # sd = 28035.39
 sqrt(var(sample_data(temp_Inocula)$Obs) /
-       length(sample_data(temp_Inocula)$Obs)) # SE = 5381.305 sqrt(var(X) / length(X))
+       length(sample_data(temp_Inocula)$Obs)) # SE = 5845.784 sqrt(var(X) / length(X))
 
 # how many ASVs?
-ntaxa(bdrt.nobadASVs.thresholded.highcoverage) # 882 bASVs
+ntaxa(bdrt.nobadASVs.thresholded.highcoverage) # 750 bASVs
 ####### Quick unconstrained ordination to check for outliers #######
 # transform ASV counts to proportions / relative abundance and ordinate: 
-drt.bact.prop <- transform_sample_counts(subset_samples(bdrt.nobadASVs.thresholded.highcoverage,Land_use!='NA_NA'),function(ASV) ASV/sum(ASV))
+drt.bact.prop <- transform_sample_counts(bdrt.nobadASVs.thresholded.highcoverage, function(ASV) ASV/sum(ASV))
 # Ordinate: 
 pcoa.drt.bact.prop <- ordinate(drt.bact.prop,method='CAP',distance='bray',formula=~Type*Location+Condition(log(UsableReads)))
 # Visualize quick ordination: --> didn't do this NF
-plot_ordination(drt.bact.prop,pcoa.drt.bact.prop,color='Type',shape='Location') +
-  facet_wrap(~Land_use)+
+plot_ordination(drt.bact.prop,pcoa.drt.bact.prop, color ='Location', shape='Type') +
+  facet_wrap(~Type)+
   scale_color_manual(values=c('black','sky blue','forest green','magenta','goldenrod','darkorchid2','cadetblue'))+
   theme_classic()# no extreme outliers
 
 with(as(sample_data(drt.bact.prop),'data.frame'),
-     adonis2(as(otu_table(drt.bact.prop),'matrix') ~Land_use:Location + Type,
+     adonis2(as(otu_table(drt.bact.prop),'matrix') ~Location + Type,
             data=as(sample_data(drt.bact.prop),'data.frame')))
-#                     Df SumOfSqs      R2      F Pr(>F)    
-#  Type               1   1.7767 0.09567 7.7843  0.001 ***
-#  Land_use:Location  5   4.4685 0.24063 3.9156  0.001 ***
-#  Residual          54  12.3249 0.66370                  
-#  Total             60  18.5700 1.00000
+#             Df SumOfSqs      R2      F Pr(>F)    
+#   Location  3   2.6211 0.21350 4.2280  0.001 ***
+#   Type      1   1.5964 0.13004 7.7253  0.001 ***
+#   Residual 39   8.0592 0.65646                  
+#   Total    43  12.2767 1.00000
 
 # Clean up environment
 rm(pcoa.drt.bact.prop,drt.bact.prop)
-
-####### Separate out controls from samples ####### 
-# bdrt.controls <- subset_samples(bdrt.nobadASVs.thresholded.highcoverage,Type %in% c('neg_control','pos_control')) %>% prune_taxa(taxa_sums(.)>0,.)
-# bdrt.nobadASVs.thresholded.roots <- subset_samples(bdrt.nobadASVs.thresholded.highcoverage,Type=='root' & SoilInoculum!='NA_NA') %>% prune_taxa(taxa_sums(.)>0,.)
 
 ####### Extract sample data for "final" dataset #######
 drt.bact <- bdrt.nobadASVs.thresholded.highcoverage # rename final phyloseq object
@@ -138,13 +135,6 @@ smd.bact <- mutate(smd.bact, logObs.z = (logObs-mean(logObs))/sd(logObs))
 row.names(smd.bact) <- smd.bact$SampleID
 # Add back into phyloseq object:
 sample_data(drt.bact) <- smd.bact
-
-####### Get list of ASVs for Venn diagram ########
-soil_asvs.vec <- colnames(otu_table(prune_taxa(taxa_sums(subset_samples(drt.bact, Type=="Soil")) > 1, subset_samples(drt.bact, Type=="Soil"))))
-inoc_asvs.vec <- colnames(otu_table(prune_taxa(taxa_sums(subset_samples(drt.bact, Type=="Inocula")) > 1, subset_samples(drt.bact, Type=="Inocula"))))
-
-write.csv(soil_asvs.vec, "Intermediate_data/ASV_list_for_venn_diagram_soil_16S.csv")
-write.csv(inoc_asvs.vec, "Intermediate_data/ASV_list_for_venn_diagram_inoc_16S.csv")
 
 ####### Relabel ASVs for convenience #######
 tax <- as(tax_table(drt.bact),'matrix')
@@ -179,8 +169,6 @@ for (i in 1:ncol(ASV)) {
 drt.bact <- phyloseq(otu_table(ASV,taxa_are_rows=FALSE),tax_table(as(tax,'matrix')))
 # Add back into phyloseq object:
 sample_data(drt.bact) <- smd.bact
-# Sample with RepID 4 was removed as it was marked as no germination in the metadata.
-drt.bact <- subset_samples(drt.bact, RepID!= 4)
 # Save cleaned dataset to file:
 saveRDS(drt.bact,'./Intermediate_data/phyloseq_b_clean_soil_inocula.RDS')
 
