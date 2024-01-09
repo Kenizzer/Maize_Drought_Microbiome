@@ -32,7 +32,7 @@ library(ggpubr); packageVersion('ggpubr')
 theme_set(theme_pubr())
 genotype_pallete <- c("B73" = "#91ff26", "Mo17" = "#9426ff")# B73/Mo17 - Genotype
 treatment_pallete <- c("W" = "#0000FF", "D" = "#DAA520") # Drought/WW     - Treatment
-location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#7fd66f", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
+location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#ffe785", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
 
 ### Load data set for use throughout ###
 drt.bact.late.clr <- readRDS('Intermediate_data/phyloseq_b_asv_clean_inoculated_late_clr.RDS') # CLR normalized

@@ -50,11 +50,11 @@
 <rect x='45.61' y='5.98' width='206.87' height='403.43' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
 <line x1='75.16' y1='219.73' x2='75.16' y2='5.98' style='stroke-width: 4.27; stroke: #780C72; stroke-linecap: butt;' />
 <line x1='124.41' y1='298.46' x2='124.41' y2='147.05' style='stroke-width: 4.27; stroke: #F5805D; stroke-linecap: butt;' />
-<line x1='173.67' y1='309.34' x2='173.67' y2='209.23' style='stroke-width: 4.27; stroke: #7FD66F; stroke-linecap: butt;' />
+<line x1='173.67' y1='309.34' x2='173.67' y2='209.23' style='stroke-width: 4.27; stroke: #FFE785; stroke-linecap: butt;' />
 <line x1='222.92' y1='259.61' x2='222.92' y2='83.09' style='stroke-width: 4.27; stroke: #3BA150; stroke-linecap: butt;' />
 <rect x='71.69' y='129.32' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #780C72; fill: #000000;' />
 <rect x='120.95' y='235.33' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #F5805D; fill: #000000;' />
-<rect x='170.20' y='264.41' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #7FD66F; fill: #000000;' />
+<rect x='170.20' y='264.41' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #FFE785; fill: #000000;' />
 <rect x='219.46' y='184.85' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #3BA150; fill: #000000;' />
 </g>
 <g clip-path='url(#cpMC4wMHw4NjQuMDB8MC4wMHw0MzIuMDA=)'>
@@ -98,11 +98,11 @@
 <rect x='304.06' y='5.98' width='206.87' height='403.43' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
 <line x1='333.61' y1='243.92' x2='333.61' y2='5.98' style='stroke-width: 4.27; stroke: #780C72; stroke-linecap: butt;' />
 <line x1='382.86' y1='317.40' x2='382.86' y2='155.22' style='stroke-width: 4.27; stroke: #F5805D; stroke-linecap: butt;' />
-<line x1='432.12' y1='334.35' x2='432.12' y2='239.19' style='stroke-width: 4.27; stroke: #7FD66F; stroke-linecap: butt;' />
+<line x1='432.12' y1='334.35' x2='432.12' y2='239.19' style='stroke-width: 4.27; stroke: #FFE785; stroke-linecap: butt;' />
 <line x1='481.37' y1='278.99' x2='481.37' y2='82.36' style='stroke-width: 4.27; stroke: #3BA150; stroke-linecap: butt;' />
 <rect x='330.14' y='147.56' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #780C72; fill: #000000;' />
 <rect x='379.40' y='253.01' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #F5805D; fill: #000000;' />
-<rect x='428.65' y='292.91' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #7FD66F; fill: #000000;' />
+<rect x='428.65' y='292.91' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #FFE785; fill: #000000;' />
 <rect x='477.91' y='199.42' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #3BA150; fill: #000000;' />
 </g>
 <g clip-path='url(#cpMC4wMHw4NjQuMDB8MC4wMHw0MzIuMDA=)'>
@@ -146,11 +146,11 @@
 <rect x='562.51' y='5.98' width='206.87' height='403.43' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
 <line x1='592.06' y1='243.33' x2='592.06' y2='5.98' style='stroke-width: 4.27; stroke: #780C72; stroke-linecap: butt;' />
 <line x1='641.31' y1='330.57' x2='641.31' y2='192.49' style='stroke-width: 4.27; stroke: #F5805D; stroke-linecap: butt;' />
-<line x1='690.57' y1='341.61' x2='690.57' y2='256.17' style='stroke-width: 4.27; stroke: #7FD66F; stroke-linecap: butt;' />
+<line x1='690.57' y1='341.61' x2='690.57' y2='256.17' style='stroke-width: 4.27; stroke: #FFE785; stroke-linecap: butt;' />
 <line x1='739.82' y1='278.64' x2='739.82' y2='82.69' style='stroke-width: 4.27; stroke: #3BA150; stroke-linecap: butt;' />
 <rect x='588.60' y='147.10' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #780C72; fill: #000000;' />
 <rect x='637.85' y='275.17' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #F5805D; fill: #000000;' />
-<rect x='687.10' y='304.02' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #7FD66F; fill: #000000;' />
+<rect x='687.10' y='304.02' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #FFE785; fill: #000000;' />
 <rect x='736.36' y='199.25' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #3BA150; fill: #000000;' />
 </g>
 <g clip-path='url(#cpMC4wMHw4NjQuMDB8MC4wMHw0MzIuMDA=)'>
@@ -182,8 +182,8 @@
 <rect x='786.51' y='195.23' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #780C72; fill: #000000;' />
 <line x1='789.97' y1='222.89' x2='789.97' y2='209.06' style='stroke-width: 4.27; stroke: #F5805D; stroke-linecap: butt;' />
 <rect x='786.51' y='212.51' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #F5805D; fill: #000000;' />
-<line x1='789.97' y1='240.17' x2='789.97' y2='226.34' style='stroke-width: 4.27; stroke: #7FD66F; stroke-linecap: butt;' />
-<rect x='786.51' y='229.79' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #7FD66F; fill: #000000;' />
+<line x1='789.97' y1='240.17' x2='789.97' y2='226.34' style='stroke-width: 4.27; stroke: #FFE785; stroke-linecap: butt;' />
+<rect x='786.51' y='229.79' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #FFE785; fill: #000000;' />
 <line x1='789.97' y1='257.45' x2='789.97' y2='243.62' style='stroke-width: 4.27; stroke: #3BA150; stroke-linecap: butt;' />
 <rect x='786.51' y='247.07' width='6.93' height='6.93' style='stroke-width: 1.42; stroke: #3BA150; fill: #000000;' />
 <text x='804.59' y='202.13' style='font-size: 9.60px; font-family: "Arial";' textLength='19.71px' lengthAdjust='spacingAndGlyphs'>SVR</text>

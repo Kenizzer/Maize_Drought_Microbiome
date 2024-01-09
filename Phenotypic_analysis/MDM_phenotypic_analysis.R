@@ -18,7 +18,6 @@
 library(tidyverse); packageVersion('tidyverse')
 library(phyloseq); packageVersion('phyloseq')
 library(vegan); packageVersion('vegan')
-library(lme4); packageVersion('lme4')
 library(lmerTest); packageVersion('lmerTest')
 library(emmeans); packageVersion('emmeans')
 library(ggpubr); packageVersion('ggpubr')
@@ -28,7 +27,7 @@ library(car); packageVersion('car')
 theme_set(theme_pubr())
 genotype_pallete <- c("B73" = "#91ff26", "Mo17" = "#9426ff")# B73/Mo17 - Genotype
 treatment_pallete <- c("Well-Watered" = "#0000FF", "Drought" = "#DAA520") # Drought/WW     - Treatment
-location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#7fd66f", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
+location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#ffe785", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
 
 
 ### Load dataset for use throughout
@@ -42,7 +41,7 @@ sampledata <- sampledata[sampledata$SoilLocation != "Control",]
 #### Emergence Rate ####
 # No effect of drought since the drought treatment wasn't applied to the plants prior to germination
 sampledata$Germination <- as.numeric(as.factor(sampledata$Germination))
-Germ_mod <- glmer(Germination ~ Genotype * SoilLocation + (1|Block), data = sampledata)
+Germ_mod <- lmer(Germination ~ Genotype * SoilLocation + (1|Block), data = sampledata)
 car::Anova(Germ_mod, type = "III")
 # Count # germinates by genotype (coded numerically, No = 1, yes = 2)
 summary(as.factor(paste(sampledata$Genotype, sampledata$Germination, sep = "_")))
@@ -179,7 +178,7 @@ sampledata_w_controls_germinants <- sampledata_w_controls_germinants %>%
 
 # Reorder dry to wet sites
 sampledata_w_controls_germinants$SoilLocation <- factor(sampledata_w_controls_germinants$SoilLocation, levels = c("Control","SVR", "HAY", "TLI", "KNZ"))
-soil_merged_pallete_w_control <- c("Control" = "#FFFFFF","SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#7fd66f", "KNZ" = "#3ba150")
+soil_merged_pallete_w_control <- c("Control" = "#FFFFFF","SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#ffe785", "KNZ" = "#3ba150")
 # Both plots together FACET 
 # ShootMassRate
 Figure6_A <- ggplot(sampledata_w_controls_germinants, aes(x = SoilLocation, y = ShootMassRate, fill = SoilLocation)) +
@@ -265,7 +264,6 @@ Controls_phenotypic_responses_with_line_plot <- ggarrange(Figure6_A, Figure6_BC,
 # save
 ggsave("figures/Figure6_Controls_phenotypic_responses_facet_lineplots.svg", Controls_phenotypic_responses_with_line_plot, height = 8, width = 14)
 ggsave("figures/Figure6_Controls_phenotypic_responses_facet_lineplots.png", Controls_phenotypic_responses_with_line_plot,  height = 8, width = 14)
-
 
 #### Figure S17 Alternative Metrics for association with plant phenotypic measures####
 ##### Evapotranspiration of sites #####
@@ -448,7 +446,7 @@ P1 <- ggplot(sampledata_with_PDSI, aes(x = PDSI, y = ShootMassRate, color = Drou
   annotate(geom = "point", x = 0.6842187, y = 0.01464865, color = "#f5805d", size = 5, alpha = 0.8) + 
   annotate(geom = "point", x = 0.6842187, y = 0.01464865, color = "#0000FF") + 
   annotate(geom = "text", x = 0.6742187, y = 0.01464865, label = "HAY", hjust = "right") +
-  annotate(geom = "point", x = 0.8786198, y = 0.015375, color = "#7fd66f", size = 5, alpha = 0.8) + 
+  annotate(geom = "point", x = 0.8786198, y = 0.015375, color = "#ffe785", size = 5, alpha = 0.8) + 
   annotate(geom = "point", x = 0.8786198, y = 0.015375, color = "#0000FF") + 
   annotate(geom = "text", x = 0.8686198, y = 0.015375, label = "TLI", hjust = "right")
 P2 <- ggplot(sampledata_with_PDSI, aes(x = PDSI, y = ShootMassRate, color = Genotype)) +

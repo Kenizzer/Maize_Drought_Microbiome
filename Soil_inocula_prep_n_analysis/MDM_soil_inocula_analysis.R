@@ -13,7 +13,7 @@ library(ggpubr); packageVersion("ggpubr")
 
 #Themes and color palette 
 theme_set(theme_pubr())
-location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#7fd66f", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
+location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#ffe785", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
 
 ### Load datasets for use throughout ###
 # Bacteria datasets
@@ -38,7 +38,7 @@ RDA.ait.hmep.bact.clr <- ordinate(hmep.bact.clr, method='RDA',distance='euclidea
 RDA_16S <- plot_ordination(hmep.bact.clr, RDA.ait.hmep.bact.clr)
 RDA_16S[["layers"]][[1]][["geom"]][["default_aes"]][["colour"]] <- 'white'
 RDA_16S <- RDA_16S + 
-  geom_point(aes(fill = Location, shape = Type), size = 3, alpha = 0.80, color = "black") +
+  geom_point(aes(fill = Location, shape = Type), size = 3, alpha = 1, color = "black") +
   scale_shape_manual(values=c(24, 21), name = "Substrate") +
   scale_fill_manual(values = location_pallete, name = "Soil Source")+
   theme(legend.text.align = 0) +
@@ -52,7 +52,7 @@ RDA.ait.hmep.fungi.clr <- ordinate(hmep.fungi.clr, method = "RDA", distance = "e
 RDA_ITS <- plot_ordination(hmep.fungi.clr, RDA.ait.hmep.fungi.clr)
 RDA_ITS[["layers"]][[1]][["geom"]][["default_aes"]][["colour"]] <- 'white'
 RDA_ITS <- RDA_ITS + 
-  geom_point(aes(fill = Location, shape = Type), size = 3, alpha = 0.80, color = "black") +
+  geom_point(aes(fill = Location, shape = Type), size = 3, alpha = 1, color = "black") +
   scale_shape_manual(values=c(24, 21), name = "Substrate") +
   scale_fill_manual(values = location_pallete, name = "Soil Source")+
   theme(legend.text.align = 0) +
@@ -65,8 +65,8 @@ ggsave("./figures/Figure2_RDA_16S_ITS.svg", RDA_16S_ITS, width = 6, height = 4)
 ggsave("./figures/Figure2_RDA_16S_ITS.png", RDA_16S_ITS, width = 6, height = 4)
 
 
-#### Supplemental Figure 1/3 ####
-## Supplemental Figure 1
+#### Supplemental Figure 5/6 ####
+## Supplemental Figure 5
 ## Taxonomic barplots for bacterial and fungal soil and inocula samples
 phylo.16s_phylum <- phyloseq::tax_glom(hmep.bact, taxrank= "Phylum") # 11 taxa
 # Make relative abundance 
@@ -122,7 +122,7 @@ tax_barplot_16S <- ggarrange(top10_16S_soil, top10_16S_inocula, nrow = 2, common
 ggsave("./figures/FigureS5_tax_barplot_16S.svg", tax_barplot_16S, width = 10, height = 6)
 ggsave("./figures/FigureS5_tax_barplot_16S.png", tax_barplot_16S, width = 10, height = 6)
 
-## Supplementary Figure 3
+## Supplementary Figure 6
 phylo.ITS_phylum <- phyloseq::tax_glom(hmep.fungi, taxrank= "Class") # 25 taxa
 # Make relative abundance 
 phylo.ITS_phylum_relab <- transform_sample_counts(phylo.ITS_phylum, function(x) x/sum(x))
@@ -154,7 +154,7 @@ phylum_top10_ITS$Location <- factor(phylum_top10_ITS$Location, levels = c("SVR",
 top10_ITS_soil <- ggplot(phylum_top10_ITS[phylum_top10_ITS$Type == "Soil", ], aes(x = Sample, y = Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   ylab("Relative abundance") +
-  scale_fill_manual(name = "Class", values = safe_colorblind_palette_MOD_FUN) +
+  scale_fill_manual(name = "Class", values = palette_MOD_soil_ITS) +
   facet_grid(~Location, scale = "free") +
   theme(legend.position = 'right') + 
   theme(axis.title.x=element_blank(),
@@ -164,7 +164,7 @@ top10_ITS_soil <- ggplot(phylum_top10_ITS[phylum_top10_ITS$Type == "Soil", ], ae
 top10_ITS_inocula <- ggplot(phylum_top10_ITS[phylum_top10_ITS$Type == "Inocula", ], aes(x = Sample, y = Abundance, fill = Class)) +
   geom_bar(stat = "identity") +
   ylab("Relative abundance") +
-  scale_fill_manual(name = "Class", values = safe_colorblind_palette_MOD_FUN) +
+  scale_fill_manual(name = "Class", values = palette_MOD_soil_ITS) +
   facet_grid(~Location, scale = "free") +
   theme(legend.position = 'right') + 
   theme(axis.title.x=element_blank(),
@@ -176,6 +176,7 @@ ggsave("./figures/FigureS6_tax_barplot_ITS.svg", tax_barplot_ITS, width = 10, he
 ggsave("./figures/FigureS6_tax_barplot_ITS.png", tax_barplot_ITS, width = 10, height = 6)
 
 #### Alpha Diversity Statistics ####
+## FigureS3
 ## Bacteria
 #extract metadata from clr transformed phyloseq object
 bact.clr.sampledata <- data.frame(sample_data(hmep.bact.clr))
@@ -244,6 +245,7 @@ ggsave("./figures/FigureS3_alpha.div.emm.16s.svg", emm_16s_combo,  width = 12, h
 ggsave("./figures/FigureS3_alpha.div.emm.16s.png", emm_16s_combo,  width = 12, height = 6)
 
 ## Fungi 
+## Figure S4
 #extract metadata from clr transformed phyloseq object
 fungi.clr.sampledata <- data.frame(sample_data(hmep.fungi.clr))
 #linear models

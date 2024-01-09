@@ -29,7 +29,7 @@ library(fantaxtic); packageVersion('fantaxtic')
 theme_set(theme_pubr())
 genotype_pallete <- c("B73" = "#91ff26", "Mo17" = "#9426ff")# B73/Mo17 - Genotype
 treatment_pallete <- c("W" = "#0000FF", "D" = "#DAA520") # Drought/WW     - Treatment
-location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#7fd66f", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
+location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#ffe785", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
 
 
 ### Load datasets for use throughout ###
@@ -115,9 +115,11 @@ tapply(family_relab[family_relab$Family == "Nocardiaceae",]$Abundance, family_re
 # ASV 46, 47, 55
 ML_relab <- transform_sample_counts(drt.bact.late, function(x) x/sum(x))
 ML_relab_df <- psmelt(ML_relab)
+# Sphingomonadaceae 
 tapply(ML_relab_df[ML_relab_df$OTU == "bASV_46",]$Abundance, ML_relab_df[ML_relab_df$OTU == "bASV_46",]$Drought.or.Watered, summary)
-tapply(ML_relab_df[ML_relab_df$OTU == "bASV_47",]$Abundance, ML_relab_df[ML_relab_df$OTU == "bASV_47",]$Drought.or.Watered, summary)
 tapply(ML_relab_df[ML_relab_df$OTU == "bASV_55",]$Abundance, ML_relab_df[ML_relab_df$OTU == "bASV_55",]$Drought.or.Watered, summary)
+# Sphingobacteriaceae 
+tapply(ML_relab_df[ML_relab_df$OTU == "bASV_47",]$Abundance, ML_relab_df[ML_relab_df$OTU == "bASV_47",]$Drought.or.Watered, summary)
 
 
 #### Taxonomic barplots ####
@@ -187,7 +189,7 @@ Figure4A <- ggplot(class_top10_ordered, aes(x=plot_order, y=Abundance, fill = Ph
   ylab("Relative abundance") +
   xlab("sample") +
   facet_wrap(~Drought.or.Watered + SoilLocation, scale = "free_x", nrow = 2, labeller = label_parsed) +
-  scale_fill_manual(values=palette_TB, labels = c("Actinomycetota",
+  scale_fill_manual(name = "Phylum/Class", values=palette_TB, labels = c("Actinomycetota",
                                                          "Bacteroidota",
                                                          "Bacillota",
                                                          "Gemmatimonadota",
@@ -314,3 +316,4 @@ soil_inoc_RDA <- plot_ordination(drt.bact.late.clr, drt.bact.dbRDA,color = 'Soil
   guides(color=guide_legend(nrow=6, byrow=TRUE), fill=guide_legend(nrow=6, byrow=TRUE)) + theme(legend.text.align = 0, legend.position = 'right')
 ggsave("figures/Soil_inoculum_RDA.svg", soil_inoc_RDA, height = 6, width = 6)
 ggsave("figures/Soil_inoculum_RDA.png", soil_inoc_RDA, height = 6, width = 6)
+

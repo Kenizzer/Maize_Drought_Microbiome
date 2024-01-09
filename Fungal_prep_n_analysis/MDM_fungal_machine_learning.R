@@ -172,8 +172,7 @@ Get_taxa_importance <- function(RF_MODEL = NULL, FOLD_MODEL = NULL, TOP_N = 100)
     final_df[,cols] <- lapply(final_df[cols], factor) 
     return(final_df)
   } else if (!is.null(FOLD_MODEL)){
-    X <- as.data.frame(FOLD_MODEL$variable.importance)
-    X <- c(order(X, decreasing=TRUE)[1:TOP_N])
+    X <- c(order(FOLD_MODEL$variable.importance, decreasing=TRUE)[1:TOP_N])
     my_vect <- c()
     # For loop to go through ASV numbers and get ASV_hashs
     for (i in X) {
@@ -308,21 +307,21 @@ a <- ggplot(RF_list_treatment[RF_list_treatment$mean > 0.001, ], aes(x= mean, y 
   scale_fill_manual(values = class_palette) +
   geom_errorbar(aes(xmin=mean - SD/sqrt(length(mean)), xmax=mean + SD/sqrt(length(mean))), width=.2) +
   scale_x_continuous(labels = scales::number_format(accuracy = 0.001)) +
-  xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
+  xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank())
 
 b <- ggplot(RF_list_soil_inoculum[RF_list_soil_inoculum$mean > 0.001, ], aes(x= mean, y = reorder(ASV_numb, mean), fill = Class)) +
   geom_col() +
   scale_fill_manual(values = class_palette) +
   geom_errorbar(aes(xmin=mean - SD/sqrt(length(mean)), xmax=mean + SD/sqrt(length(mean))), width=.2) +
   scale_x_continuous(labels = scales::number_format(accuracy = 0.001)) +
-  xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
+  xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank())
 
 c <- ggplot(RF_list_genotype[RF_list_genotype$mean > 0.001, ], aes(x= mean, y = reorder(ASV_numb, mean), fill = Class)) +
   geom_col() +
   scale_fill_manual(values = class_palette) +
   geom_errorbar(aes(xmin=mean - SD/sqrt(length(mean)), xmax=mean + SD/sqrt(length(mean))), width=.2) +
   scale_x_continuous(labels = scales::number_format(accuracy = 0.001)) +
-  xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank(), axis.title.x = element_blank())
+  xlab("Mean Decrease in Accuracy ") + theme(axis.title.y = element_blank())
 
 # Combination plot
 ggarrange(a,b,c, nrow = 1, common.legend = TRUE, labels = c("Treatment","Soil Inoculum", "Genotype"), align = "hv", legend = "right")

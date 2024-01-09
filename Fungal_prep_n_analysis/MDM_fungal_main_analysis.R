@@ -19,7 +19,6 @@ library(tidyverse); packageVersion('tidyverse')
 library(phyloseq); packageVersion('phyloseq')
 library(vegan); packageVersion('vegan')
 library(ALDEx2); packageVersion('ALDEx2')
-library(lme4); packageVersion('lme4')
 library(lmerTest); packageVersion('lmerTest')
 library(emmeans); packageVersion('emmeans')
 library(ggpubr); packageVersion('ggpubr')
@@ -29,7 +28,7 @@ library(fantaxtic); packageVersion('fantaxtic')
 theme_set(theme_pubr())
 genotype_pallete <- c("B73" = "#91ff26", "Mo17" = "#9426ff")# B73/Mo17 - Genotype
 treatment_pallete <- c("W" = "#0000FF", "D" = "#DAA520") # Drought/WW     - Treatment
-location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#7fd66f", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
+location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#ffe785", "KNZ" = "#3ba150") # SVR/HAY/TLI/KNZ - Soil location
 
 ### Load datasets for use throughout ###
 drt.fungi.late <- readRDS('Intermediate_data/phyloseq_f_asv_clean_inoculated_late.RDS')
@@ -105,10 +104,12 @@ fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$term == "Genotype:SoilLocation:D
     sum(fungi.clr.long.aovs_gen[fungi.clr.long.aovs_gen$Family == "Mucoraceae", ]$sumsq)) * 100 # 47.8% variance explained
 
 # Stats for two ML ASVs
-# ASV 46, 47, 55
+# ASV 4 and 5
 ML_relab <- transform_sample_counts(drt.fungi.late, function(x) x/sum(x))
 ML_relab_df <- psmelt(ML_relab)
+# Aspergillaceae 
 tapply(ML_relab_df[ML_relab_df$OTU == "fASV_4",]$Abundance, ML_relab_df[ML_relab_df$OTU == "fASV_4",]$Drought.or.Watered, summary)
+# Sarocladiaceae 
 tapply(ML_relab_df[ML_relab_df$OTU == "fASV_5",]$Abundance, ML_relab_df[ML_relab_df$OTU == "fASV_5",]$Drought.or.Watered, summary)
 
 
@@ -272,3 +273,4 @@ soil_inoc_RDA <- plot_ordination(drt.fungi.late.clr, drt.fungi.dbRDA,color = 'So
   guides(color=guide_legend(nrow=6, byrow=TRUE), fill=guide_legend(nrow=6, byrow=TRUE)) + theme(legend.text.align = 0, legend.position = 'right')
 ggsave("figures/Soil_inoculum_RDA.svg", soil_inoc_RDA, height = 6, width = 6)
 ggsave("figures/Soil_inoculum_RDA.png", soil_inoc_RDA, height = 6, width = 6)
+
