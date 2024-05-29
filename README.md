@@ -21,7 +21,7 @@ Table of markers used within the study.
 
 ## Experimental Design
 
-**A)** Soil samples were collected from native prairies at four locations in Kansas along precipitation gradient. **B-E** Boxplots to the right of the map depict annual climatic metrics extracted from the TerraClimate database for each collection site from 1990-2021: B) precipitation, C) reference evapotranspiration, D) aridity index, and E) soil moisture. Boxplot hinges represent the 1st and 3rd quartiles; whiskers represent 1.5 times the interquartile range.
+**A)** Soil samples were collected from native prairies at four locations in Kansas along precipitation gradient. **B-E** Boxplots to the right of the map depict annual climatic metrics extracted from the TerraClimate database for each collection site from 1990-2021: **B)** precipitation, **C)** reference evapotranspiration, **D)** aridity index, and **E)** Palmer Drought Severity index. Boxplot hinges represent the 1st and 3rd quartiles; whiskers represent 1.5 times the interquartile range.
 
 ![Image of experimental design 1](https://github.com/Kenizzer/Maize_Drought_Microbiome/blob/main/Experimental_design_1.png)
 
