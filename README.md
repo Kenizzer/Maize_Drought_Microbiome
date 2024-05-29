@@ -6,8 +6,11 @@
 ## Abstract
 
 **Background and Aims:** As the climate changes, plants and their associated microbiomes face greater water limitation and increased frequency of drought. Soil- and root-associated microbes perform important functions that affect plant drought resilience, but the dynamics of their interactions with the host are poorly understood. Plant growth responses to natural soil microbiomes, as well as patterns of root colonization by microbes, are challenging to predict.
+
 **Methods:** We collected soil microbiomes from four native prairies across a steep precipitation gradient in Kansas, USA. Seedlings of two Zea mays genotypes were inoculated with each soil microbiome in a factorial drought experiment. We investigated plant phenotypic and root microbiome responses to drought and compared the effects of natural microbiome variation on plant growth under water-limited and well-watered conditions. 
+
 **Results:** Drought caused plants to accumulate shoot mass more slowly and achieve greater root/shoot mass ratios. Drought restructured the bacterial root-associated microbiome via depletion of Pseudomonadota and enrichment of Actinomycetota, whereas the fungal microbiome was largely unaffected. Taxonomically distinct soil microbiomes from the four contrasting environments affected plant growth under well-watered but not drought conditions. 
+
 **Conclusion:** We demonstrated that the functional consequences of naturally-occurring soil microbiome variation are dependent on water availability, suggesting that future drying climates may dampen plants’ responsiveness to beneficial and/or pathogenic microbes.
 
 
