@@ -103,7 +103,21 @@ labels_df <- tibble(Drought.or.Watered=levels(as.factor(sampledata_germinants$Dr
                     SMR=max(sampledata_germinants$ShootMassRate, na.rm = TRUE) * 1.1,
                     RSR=max(sampledata_germinants$RootShootRatio, na.rm = TRUE) * 1.1)
 
-#### Figure 3 and S7 ####
+#### Within-inoculum Coefficient of variation for SMR in DRT vs in WW ####
+cv <- function(x, na.rm = FALSE) (sd(x, na.rm = na.rm)/mean(x, na.rm = na.rm))*100
+
+sampledata_germinants %>%
+  select(Drought.or.Watered, SoilLocation, ShootMassRate) %>%
+  group_by(Drought.or.Watered, SoilLocation) %>%
+  summarise(ShootMassRate_cv = cv(ShootMassRate, na.rm = TRUE))
+
+sampledata_germinants %>%
+  select(Drought.or.Watered, SoilLocation, ShootMassRate) %>%
+  group_by(Drought.or.Watered, SoilLocation) %>%
+  summarise(ShootMassRate_mean = mean(ShootMassRate, na.rm = TRUE))
+
+
+#### Figure 3 and S6 ####
 # Drought effects
 a <- ggplot(sampledata_germinants, aes(x = Drought.or.Watered, y = ShootMassRate, fill = Drought.or.Watered)) +
   geom_jitter(width = 0.3) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") +
@@ -148,14 +162,14 @@ part2 <- ggarrange(d,e,f, align = "hv", common.legend = TRUE, legend = 'right',l
 part1
 ggsave("figures/figure3_phenotypic_treatment.svg", part1, width = 10, height = 5)
 ggsave("figures/figure3_phenotypic_treatment.png", part1, width = 10, height = 5)
-### Figure S7 ###
+### Figure S6 ###
 part2 <- ggarrange(d,e,f, align = "hv", common.legend = TRUE, legend = 'right',labels = "AUTO", nrow=1)
 ggsave("figures/figureS6_phenotypic_genotype.svg", part2, width = 10, height = 5)
 ggsave("figures/figureS6_phenotypic_genotype.png", part2, width = 10, height = 5)
 
 
 
-#### Figure 6 and S16 ####
+#### Figure 6 and S7 ####
 ## Plots by soil inocula w/ controls
 sampledata_w_controls
 # Now remove non-germinants (coded numerically, No = 1, yes = 2)
@@ -181,7 +195,7 @@ sampledata_w_controls_germinants$SoilLocation <- factor(sampledata_w_controls_ge
 soil_merged_pallete_w_control <- c("Control" = "#FFFFFF","SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#ffe785", "KNZ" = "#3ba150")
 # Both plots together FACET 
 # ShootMassRate
-Figure6_A <- ggplot(sampledata_w_controls_germinants, aes(x = SoilLocation, y = ShootMassRate, fill = SoilLocation)) +
+Figure6a <- ggplot(sampledata_w_controls_germinants, aes(x = SoilLocation, y = ShootMassRate, fill = SoilLocation)) +
   geom_jitter(width = 0.2) + geom_boxplot(outlier.colour = NA, alpha=0.8, color = "black") + 
   ylab("Shoot Mass Rate (g/day)") +
   scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum") +
@@ -201,293 +215,155 @@ c <- ggplot(sampledata_w_controls_germinants, aes(x = SoilLocation, y = RootShoo
   scale_fill_manual(values = soil_merged_pallete_w_control, name = "Soil Inoculum") +
   theme(legend.text.align = 0, axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
   facet_wrap(~Drought.or.Watered) + ylim(0,12) # This removes 3 points, noted in legend
-#### Figure S16 ####
-b
-c
-RMR_RSR_plot <- ggarrange(b,c, nrow = 2, common.legend = TRUE, labels = "AUTO", align = 'hv', legend = "right")
+#### Figure S7 ####
+SMR_RMR_RSR_plot <- ggarrange(Figure6a,b,c, nrow = 3, common.legend = TRUE, labels = "AUTO", align = 'hv', legend = "right")
 # save
-ggsave("figures/FigureS16_Controls_phenotypic_responses_RMR_RSR.svg", RMR_RSR_plot, height = 8, width = 10)
-ggsave("figures/FigureS16_Controls_phenotypic_responses_RMR_RSR.png", RMR_RSR_plot,  height = 8, width = 10)
-#### Figure 6BC Association of plant growth with Normal Annual Precipitation of the soil inocula sites####
-# 30 year normal MAP 1991-2021
-sampledata_with_MAP <- sampledata_germinants %>%
-  group_by(SoilLocation) %>%
-  mutate( MAP = case_when(
-    SoilLocation == "SVR" ~ 478.9250,
-    SoilLocation == "HAY" ~ 601.7375,
-    SoilLocation == "TLI" ~ 783.8156,
-    SoilLocation == "KNZ" ~ 912.3438))
-# Quick plots
-P1 <- ggplot(sampledata_with_MAP, aes(x = MAP, y = ShootMassRate, color = Drought.or.Watered)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Treatment" , values = treatment_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank())
-P2 <- ggplot(sampledata_with_MAP, aes(x = MAP, y = ShootMassRate, color = Drought.or.Watered)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(values = treatment_pallete) +
-  ylab("Root Mass Rate (g/day)") + theme(axis.title.x = element_blank())
-P3 <- ggplot(sampledata_with_MAP, aes(x = MAP, y = ShootMassRate, color = Drought.or.Watered)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(values = treatment_pallete) +
-  ylab("Root Shoot Ratio") + xlab("Normal Annual Precipitation (mm)")
-P4 <- ggarrange(P1,P2,P3, nrow = 3, align = 'hv', common.legend = TRUE, legend = 'right', labels = "AUTO")
-#STATS
-anova(lmerTest::lmer(sqrt(ShootMassRate) ~ MAP*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_MAP))
-anova(lmerTest::lmer(sqrt(RootMassRate) ~ MAP*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_MAP))
-anova(lmerTest::lmer(log(RootShootRatio) ~ MAP*Drought.or.Watered*Genotype + (1|Block) + (1|Timepoint), data = sampledata_with_MAP))
-# SMR across just native soils
-SMR.native.mod <- lmerTest::lmer(sqrt(ShootMassRate) ~ MAP*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_MAP)
-emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "MAP")
-emtrends(SMR.native.mod, ~ Genotype, var = "MAP")
-# Get non-transformed slopes for easier interpretation of results.
-SMR.native.mod.non.transformed <- lmerTest::lmer(ShootMassRate ~ MAP*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_MAP)
-emtrends(SMR.native.mod.non.transformed, ~ Drought.or.Watered, var = "MAP")
-emtrends(SMR.native.mod.non.transformed, ~ Genotype, var = "MAP")
-# Panels B/C
-P1 <- ggplot(sampledata_with_MAP, aes(x = MAP, y = ShootMassRate, color = Drought.or.Watered)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Treatment" , values = treatment_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
-  ylim(0.000, 0.022) + annotate("text", x = 775, y= 0.022, label = "W = -2.88 e-6", fontface = 'italic') +
-  annotate("text", x = 775, y= 0.020, label = "D =  4.53 e-7", fontface = 'italic') +
-  annotate("text", x = 775, y= 0.018, label = "MAP×DT p = 0.04", fontface = 'italic')
-P2 <- ggplot(sampledata_with_MAP, aes(x = MAP, y = ShootMassRate, color = Genotype)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Genotype" , values = genotype_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + xlab("Normal Annual Precipitation (mm)") +
-  ylim(0.000, 0.022) + annotate("text", x = 775, y=0.022, label = "B73 = -2.94 e-6", fontface = 'italic') +
-  annotate("text", x = 775, y=0.020, label = "Mo17 = 5.10 e-7", fontface = 'italic') +
-  annotate("text", x = 775, y=0.018, label = "MAP×G p = 0.02", fontface = 'italic') 
-Figure6_BC <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'v', legend = 'right', labels = c('B', 'C'))
-# add line plots
-Controls_phenotypic_responses_with_line_plot <- ggarrange(Figure6_A, Figure6_BC, ncol = 2, widths = c(0.9, 0.5), legend = 'right', labels = "AUTO")
-# save
-ggsave("figures/Figure6_Controls_phenotypic_responses_facet_lineplots.svg", Controls_phenotypic_responses_with_line_plot, height = 8, width = 14)
-ggsave("figures/Figure6_Controls_phenotypic_responses_facet_lineplots.png", Controls_phenotypic_responses_with_line_plot,  height = 8, width = 14)
+ggsave("figures/FigureS7_Controls_phenotypic_responses_SMR_RMR_RSR.svg", SMR_RMR_RSR_plot, height = 8, width = 10)
+ggsave("figures/FigureS7_Controls_phenotypic_responses_SMR_RMR_RSR.png", SMR_RMR_RSR_plot,  height = 8, width = 10)
+#### Figure 6A/B Association of plant growth with aridity index and PDSI of the soil inocula sites####
+# Base models
+SMR.native.mod <- lmer(sqrt(ShootMassRate) ~ SoilLocation*Drought.or.Watered*Genotype + (1|Block), data = sampledata_germinants)
+RMR.native.mod <- lmer(sqrt(RootMassRate) ~ SoilLocation*Drought.or.Watered*Genotype + (1|Block), data = sampledata_germinants)
+RSR.native.mod <- lmer(log(RootShootRatio) ~ SoilLocation*Drought.or.Watered*Genotype + (1|Block) + (1|Timepoint), data = sampledata_germinants)
 
-#### Figure S17 Alternative Metrics for association with plant phenotypic measures####
-##### Evapotranspiration of sites #####
-sampledata_with_evap <- sampledata_germinants %>%
-  group_by(SoilLocation) %>%
-  mutate(EVAP = case_when(
-    SoilLocation == "SVR" ~ 1408.700,
-    SoilLocation == "HAY" ~ 1333.322,
-    SoilLocation == "TLI" ~ 1266.691,
-    SoilLocation == "KNZ" ~ 1170.869))
-#STATS
-anova(lmerTest::lmer(sqrt(ShootMassRate) ~ EVAP*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_evap))
-# SMR across just native soils
-SMR.native.mod <- lmerTest::lmer(sqrt(ShootMassRate) ~ EVAP*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_evap)
-emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "EVAP")
-emtrends(SMR.native.mod, ~ Genotype, var = "EVAP")
-# Get non-transformed slopes for easier interpretation of results.
-SMR.native.mod.non.transformed <- lmerTest::lmer(ShootMassRate ~ EVAP*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_evap)
-emtrends(SMR.native.mod.non.transformed, ~ Drought.or.Watered, var = "EVAP")
-emtrends(SMR.native.mod.non.transformed, ~ Genotype, var = "EVAP")
-# Both interactions with genotype and treatment
-P1 <- ggplot(sampledata_with_evap, aes(x = EVAP, y = ShootMassRate, color = Drought.or.Watered)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Treatment" , values = treatment_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
-  ylim(0.000, 0.022) + 
-  annotate("text", x = 1350, y=0.022, label = "W =  4.37 e-4", fontface = 'italic') +
-  annotate("text", x = 1350, y=0.020, label = "D = -1.13 e-6", fontface = 'italic') +
-  annotate("text", x = 1350, y=0.018, label = "ETo×DT p = 0.08", fontface = 'italic')
-P2 <- ggplot(sampledata_with_evap, aes(x = EVAP, y = ShootMassRate, color = Genotype)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Genotype" , values = genotype_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + xlab("Evapotranspiration") +
-  ylim(0.000, 0.022) + 
-  annotate("text", x = 1350, y=0.022, label = "B73 = 4.73 e-6", fontface = 'italic') +
-  annotate("text", x = 1350, y=0.020, label = "Mo17 = -1.49 e-6", fontface = 'italic') +
-  annotate("text", x = 1350, y=0.018, label = "ETo×G p = 0.03", fontface = 'italic') 
-EVAP_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'hv', legend = "none", labels = c('A', 'B'))
+# Function to extract estimated marginal means from the model and add climate data
+Model_to_DF_w_climate <- function(model){
+  # Extract emmeans and back transform.
+  mod.df <- summary(emmeans(model, ~SoilLocation*Drought.or.Watered*Genotype, type = "response"))
+  # Add climate data to the DF, matching to soil locations
+  clim.mod.df <- mod.df %>%
+    group_by(SoilLocation) %>%
+    mutate(MAP = case_when( SoilLocation == "SVR" ~ 478.9250, SoilLocation == "HAY" ~ 601.7375,
+                            SoilLocation == "TLI" ~ 783.8156, SoilLocation == "KNZ" ~ 912.3438),
+           EVAP = case_when(SoilLocation == "SVR" ~ 1408.700, SoilLocation == "HAY" ~ 1333.322,
+                            SoilLocation == "TLI" ~ 1266.691, SoilLocation == "KNZ" ~ 1170.869),
+           Aridity_index = case_when(SoilLocation == "SVR" ~ 0.3399766, SoilLocation == "HAY" ~ 0.4513070,
+                                     SoilLocation == "TLI" ~ 0.6187901, SoilLocation == "KNZ" ~ 0.7792024),
+           SoilMoisture = case_when(SoilLocation == "SVR" ~ 37.38437, SoilLocation == "HAY" ~ 92.87812,
+                                    SoilLocation == "TLI" ~ 177.09688, SoilLocation == "KNZ" ~ 348.25937),
+           PDSI = case_when(SoilLocation == "SVR" ~ 0.2431771, SoilLocation == "HAY" ~ 0.6842187,
+                            SoilLocation == "TLI" ~ 0.8786198, SoilLocation == "KNZ" ~ 0.3597917))
+  return(clim.mod.df)
+}
 
-# ##### Longitude of sites #####
-# sampledata_with_long <- sampledata_germinants %>%
-#   group_by(SoilLocation) %>%
-#   mutate(LONG = case_when(
-#     SoilLocation == "SVR" ~ -100.9951,
-#     SoilLocation == "HAY" ~ -99.3033,
-#     SoilLocation == "TLI" ~ -97.4690,
-#     SoilLocation == "KNZ" ~ -96.6099))
-# #STATS
-# anova(lmerTest::lmer(sqrt(ShootMassRate) ~ LONG*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_long))
-# # SMR across just native soils
-# SMR.native.mod <- lmerTest::lmer(sqrt(ShootMassRate) ~ LONG*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_long)
-# emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "LONG")
-# emtrends(SMR.native.mod, ~ Genotype, var = "LONG")
-# # Get non-transformed slopes for easier interpretation of results.
-# SMR.native.mod.non.transformed <- lmerTest::lmer(ShootMassRate ~ LONG*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_long)
-# emtrends(SMR.native.mod.non.transformed, ~ Drought.or.Watered, var = "LONG")
-# emtrends(SMR.native.mod.non.transformed, ~ Genotype, var = "LONG")
-# # Both interactions with genotype and treatment
-# P1 <- ggplot(sampledata_with_long, aes(x = LONG, y = ShootMassRate, color = Drought.or.Watered)) +
-#   geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-#   scale_color_manual(name = "Treatment" , values = treatment_pallete) +
-#   ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
-#   ylim(0.000, 0.022) + annotate("text", x = -98, y=0.022, label = "W = -3.29 e-4", fontface = 'italic') +
-#   annotate("text", x = -98, y=0.020, label = "D = 3.04 e-5", fontface = 'italic') +
-#   annotate("text", x = -98, y=0.018, label = "Long×DT p = 0.03", fontface = 'italic')
-# P2 <- ggplot(sampledata_with_long, aes(x = LONG, y = ShootMassRate, color = Genotype)) +
-#   geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-#   scale_color_manual(name = "Genotype" , values = genotype_pallete) +
-#   ylab("Shoot Mass Rate (g/day)") + xlab("Longitude (Lower MAP to Higher MAP)") +
-#   ylim(0.000, 0.022) + annotate("text", x = -98, y=0.022, label = "B73 = -3.07 e-4", fontface = 'italic') +
-#   annotate("text", x = -98, y=0.020, label = "Mo17 = 9.12 e-6", fontface = 'italic') +
-#   annotate("text", x = -98, y=0.018, label = "Long×G p = 0.03", fontface = 'italic') 
-# # combine
-# Long_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'hv', legend = "none", labels = c('A', 'B'))
+SMR.emmean.df <- Model_to_DF_w_climate(SMR.native.mod)
+RSR.emmean.df <- Model_to_DF_w_climate(RSR.native.mod)
+RMR.emmean.df <- Model_to_DF_w_climate(RMR.native.mod)
 
-##### Aridity index #####
-sampledata_with_ARID <- sampledata_germinants %>%
-  group_by(SoilLocation) %>%
-  mutate(Aridity_index = case_when(
-    SoilLocation == "SVR" ~ 0.3399766,
-    SoilLocation == "HAY" ~ 0.4513070,
-    SoilLocation == "TLI" ~ 0.6187901,
-    SoilLocation == "KNZ" ~ 0.7792024))
-#STATS
-anova(lmerTest::lmer(sqrt(ShootMassRate) ~ Aridity_index*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_ARID))
-# SMR across just native soils
-SMR.native.mod <- lmerTest::lmer(sqrt(ShootMassRate) ~ Aridity_index*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_ARID)
-emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "Aridity_index")
-emtrends(SMR.native.mod, ~ Genotype, var = "Aridity_index")
-# Get non-transformed slopes for easier interpretation of results.
-SMR.native.mod.non.transformed <- lmerTest::lmer(ShootMassRate ~ Aridity_index*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_ARID)
-emtrends(SMR.native.mod.non.transformed, ~ Drought.or.Watered, var = "Aridity_index")
-emtrends(SMR.native.mod.non.transformed, ~ Genotype, var = "Aridity_index")
-# Both interactions with genotype and treatment
-P1 <- ggplot(sampledata_with_ARID, aes(x = Aridity_index, y = ShootMassRate, color = Drought.or.Watered)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Treatment" , values = treatment_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
-  ylim(0.000, 0.022) + annotate("text", x = 0.65, y=0.022, label = "W = -2.51 e-3", fontface = 'italic') +
-  annotate("text", x = 0.65, y=0.020, label = "D = 5.44 e-4", fontface = 'italic') +
-  annotate("text", x = 0.65, y=0.018, label = "Arid×DT p = 0.06", fontface = 'italic')
-P2 <- ggplot(sampledata_with_ARID, aes(x = Aridity_index, y = ShootMassRate, color = Genotype)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Genotype" , values = genotype_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + xlab("Aridity Index") +
-  ylim(0.000, 0.022) + annotate("text", x = 0.65, y=0.022, label = "B73 = -2.72 e-3", fontface = 'italic') +
-  annotate("text", x = 0.65, y=0.020, label = "Mo17 = 7.49 e-4", fontface = 'italic') +
-  annotate("text", x = 0.65, y=0.018, label = "Arid×G p = 0.02", fontface = 'italic') 
-# combine
-Arid_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'hv', legend = "none", labels = c('C', 'D'))
+### Aridity Index
+# New model with climate metric, non-transformed for slopes
+SMR.AI.mod <- lm(response ~ Aridity_index*Drought.or.Watered*Genotype, data = SMR.emmean.df)
+RSR.AI.mod <- lm(response ~ Aridity_index*Drought.or.Watered*Genotype, data = RSR.emmean.df)
+RMR.AI.mod <- lm(response ~ Aridity_index*Drought.or.Watered*Genotype, data = RMR.emmean.df)
+# Anovas
+anova(SMR.AI.mod)
+anova(RSR.AI.mod)
+anova(RMR.AI.mod)
+# Slope estimates
+emtrends(SMR.AI.mod, ~ Drought.or.Watered, var = "Aridity_index")
+emtrends(RSR.AI.mod, ~ Drought.or.Watered, var = "Aridity_index")
+emtrends(RMR.AI.mod, ~ Drought.or.Watered, var = "Aridity_index")
+# Plots
+Figure6b <- ggplot(SMR.emmean.df, aes(x = Aridity_index, y = response, color = Drought.or.Watered)) +
+  ylab("Shoot Mass Rate (g/day)") + xlab("Aridity Index | Dry to Wet") +
+  geom_vline(xintercept = 0.3399766, linetype="solid", color = "#780c72", size=12, alpha = 0.8) +
+  annotate(geom = "text", x = 0.3399766, y = 0.0130, label = "SVR", hjust = "middle", fontface = 2, color = "black") +
+  geom_vline(xintercept = 0.4513070, linetype="solid", color = "#f5805d", size=12, alpha = 0.4) +
+  annotate(geom = "text", x = 0.4513070, y = 0.0130, label = "HAY", hjust = "middle", fontface = 2, color = "black" ) +
+  geom_vline(xintercept = 0.6187901, linetype="solid", color = "#ffe785", size=12, alpha = 0.8) +
+  annotate(geom = "text", x = 0.6187901, y = 0.0130, label = "TLI", hjust = "middle", fontface = 2, color = "black") +
+  geom_vline(xintercept = 0.7792024, linetype="solid", color = "#3ba150", size=12, alpha = 0.8) +
+  annotate(geom = "text", x = 0.7792024, y = 0.0130, label = "KNZ", hjust = "middle", fontface = 2, color = "black" ) +
+  geom_pointrange(aes(ymin = lower.CL, ymax = upper.CL, shape = Genotype), size = 0.75, linewidth = 1.75,
+                  fill = "white", position = position_dodge(width = 0.06)) +
+  scale_shape_manual(values = c(22,24)) +
+  scale_color_manual(values = treatment_pallete, name = "Treatment") +
+  scale_y_continuous(labels = scales::label_number(accuracy = 0.001)) +
+  guides(color = guide_legend(title.position="top"), 
+         shape = guide_legend(title.position="top"))
 
-##### Soil Moisture #####
-sampledata_with_soilmoisture <- sampledata_germinants %>%
-  group_by(SoilLocation) %>%
-  mutate(SoilMoisture = case_when(
-    SoilLocation == "SVR" ~ 37.38437,
-    SoilLocation == "HAY" ~ 92.87812,
-    SoilLocation == "TLI" ~ 177.09688,
-    SoilLocation == "KNZ" ~ 348.25937))
-#STATS
-anova(lmerTest::lmer(sqrt(ShootMassRate) ~ SoilMoisture*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_soilmoisture))
-# SMR across just native soils
-SMR.native.mod <- lmerTest::lmer(sqrt(ShootMassRate) ~ SoilMoisture*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_soilmoisture)
-emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "SoilMoisture")
-emtrends(SMR.native.mod, ~ Genotype, var = "SoilMoisture")
-# Get non-transformed slopes for easier interpretation of results.
-SMR.native.mod.non.transformed <- lmerTest::lmer(ShootMassRate ~ SoilMoisture*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_soilmoisture)
-emtrends(SMR.native.mod.non.transformed, ~ Drought.or.Watered, var = "SoilMoisture")
-emtrends(SMR.native.mod.non.transformed, ~ Genotype, var = "SoilMoisture")
-# Both interactions with genotype and treatment
-P1 <- ggplot(sampledata_with_soilmoisture, aes(x = SoilMoisture, y = ShootMassRate, color = Drought.or.Watered)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Treatment" , values = treatment_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
-  ylim(0.000, 0.022) + annotate("text", x = 275, y=0.022, label = "W = -1.92 e-6", fontface = 'italic') +
-  annotate("text", x = 275, y=0.020, label = "D = 1.11 e-6", fontface = 'italic') +
-  annotate("text", x = 275, y=0.018, label = "SM×DT p = 0.18", fontface = 'italic')
-P2 <- ggplot(sampledata_with_soilmoisture, aes(x = SoilMoisture, y = ShootMassRate, color = Genotype)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Genotype" , values = genotype_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + xlab("Normal Annual Soil Moisture (mm)") +
-  ylim(0.000, 0.022) + annotate("text", x = 275, y=0.022, label = "B73 = -2.82 e-6", fontface = 'italic') +
-  annotate("text", x = 275, y=0.020, label = "Mo17 = 2.01 e-6", fontface = 'italic') +
-  annotate("text", x = 275, y=0.018, label = "SM×G p = 0.03", fontface = 'italic') 
-# combine
-Soil_moisture_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'hv', legend = "none", labels = c('E', 'F'))
+# New model with climate metric, non-transformed for slopes
+SMR.PD.mod <- lm(response ~ PDSI*Drought.or.Watered*Genotype, data = SMR.emmean.df)
+RSR.PD.mod <- lm(response ~ PDSI*Drought.or.Watered*Genotype, data = RSR.emmean.df)
+RMR.PD.mod <- lm(response ~ PDSI*Drought.or.Watered*Genotype, data = RMR.emmean.df)
+# Anovas
+anova(SMR.PD.mod)
+anova(RSR.PD.mod)
+anova(RMR.PD.mod)
+# Slope estimates
+emtrends(SMR.PD.mod, ~ Drought.or.Watered, var = "PDSI")
+emtrends(RSR.PD.mod, ~ Drought.or.Watered, var = "PDSI")
+emtrends(RMR.PD.mod, ~ Drought.or.Watered, var = "PDSI")
 
-##### PDSI #####
-sampledata_with_PDSI <- sampledata_germinants %>%
-  group_by(SoilLocation) %>%
-  mutate(PDSI = case_when(
-    SoilLocation == "SVR" ~ 0.2431771,
-    SoilLocation == "HAY" ~ 0.6842187,
-    SoilLocation == "TLI" ~ 0.8786198,
-    SoilLocation == "KNZ" ~ 0.3597917))
-#STATS
-anova(lmerTest::lmer(sqrt(ShootMassRate) ~ PDSI*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_PDSI))
-# SMR across just native soils
-SMR.native.mod <- lmerTest::lmer(sqrt(ShootMassRate) ~ PDSI*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_PDSI)
-emtrends(SMR.native.mod, ~ Drought.or.Watered, var = "PDSI")
-emtrends(SMR.native.mod, ~ Genotype, var = "PDSI")
-# Get non-transformed slopes for easier interpretation of results.
-SMR.native.mod.non.transformed <- lmerTest::lmer(ShootMassRate ~ PDSI*Drought.or.Watered*Genotype + (1|Block), data = sampledata_with_PDSI)
-emtrends(SMR.native.mod.non.transformed, ~ Drought.or.Watered, var = "PDSI")
-emtrends(SMR.native.mod.non.transformed, ~ Genotype, var = "PDSI")
-# Both interactions with genotype and treatment
-P1 <- ggplot(sampledata_with_PDSI, aes(x = PDSI, y = ShootMassRate, color = Drought.or.Watered)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Treatment" , values = treatment_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + theme(axis.title.x = element_blank()) +
-  ylim(0.000, 0.022) + annotate("text", x = 0.7, y=0.022, label = "W = -3.31 e-3", fontface = 'italic') +
-  annotate("text", x = 0.7, y=0.020, label = "D = -7.2 e-4", fontface = 'italic') +
-  annotate("text", x = 0.7, y=0.018, label = "PDSI×DT p = 0.03", fontface = 'italic') +
-  annotate(geom = "point", x = 0.2431771, y = 0.016357143, color = "#de3a68", size = 5, alpha = 0.8) + 
-  annotate(geom = "point", x = 0.2431771, y = 0.016357143, color = "#0000FF") + 
-  annotate(geom = "text", x = 0.2531771, y = 0.016357143, label = "SVR", hjust = "left") +
-  annotate(geom = "point", x = 0.3597917, y = 0.01434211, color = "#3ba150", size = 5, alpha = 0.8) + 
-  annotate(geom = "point", x = 0.3597917, y = 0.01434211, color = "#0000FF") + 
-  annotate(geom = "text", x = 0.3697917, y = 0.01434211, label = "KNZ", hjust = "left") +
-  annotate(geom = "point", x = 0.6842187, y = 0.01464865, color = "#f5805d", size = 5, alpha = 0.8) + 
-  annotate(geom = "point", x = 0.6842187, y = 0.01464865, color = "#0000FF") + 
-  annotate(geom = "text", x = 0.6742187, y = 0.01464865, label = "HAY", hjust = "right") +
-  annotate(geom = "point", x = 0.8786198, y = 0.015375, color = "#ffe785", size = 5, alpha = 0.8) + 
-  annotate(geom = "point", x = 0.8786198, y = 0.015375, color = "#0000FF") + 
-  annotate(geom = "text", x = 0.8686198, y = 0.015375, label = "TLI", hjust = "right")
-P2 <- ggplot(sampledata_with_PDSI, aes(x = PDSI, y = ShootMassRate, color = Genotype)) +
-  geom_point(alpha = 0.3) + geom_smooth(method = "lm") +
-  scale_color_manual(name = "Genotype" , values = genotype_pallete) +
-  ylab("Shoot Mass Rate (g/day)") + xlab("Normal Monthly PDSI") +
-  ylim(0.000, 0.022) + annotate("text", x = 0.7, y=0.022, label = "B73 = -2.09 e-3", fontface = 'italic') +
-  annotate("text", x = 0.7, y=0.020, label = "Mo17 = -1.94 e-3", fontface = 'italic') +
-  annotate("text", x = 0.7, y=0.018, label = "PDSI×G p = 0.92", fontface = 'italic')
-# combine
-PDSI_smooth <- ggarrange(P1,P2, nrow = 2, ncol = 1, align = 'hv', legend = 'none', labels = c('G', 'H'))
+Figure_6c <- ggplot(SMR.emmean.df, aes(x = PDSI, y = response, color = Drought.or.Watered)) +
+  ylab("Shoot Mass Rate (g/day)") + xlab("PDSI | Dry to Wet") +
+  # Annotations to denote sites (PDSI is not a linear measure)
+  geom_vline(xintercept = 0.2431771, linetype="solid", color = "#780c72", size=12, alpha = 0.8) +
+  annotate(geom = "text", x = 0.2431771, y = 0.0130, label = "SVR", hjust = "middle", fontface = 2, color = "black") +
+  geom_vline(xintercept = 0.3597917, linetype="solid", color = "#3ba150", size=12, alpha = 0.8) +
+  annotate(geom = "text", x = 0.3597917, y = 0.0130, label = "KNZ", hjust = "middle", fontface = 2, color = "black" ) +
+  geom_vline(xintercept = 0.6842187, linetype="solid", color = "#f5805d", size=12, alpha = 0.4) +
+  annotate(geom = "text", x = 0.6842187, y = 0.0130, label = "HAY", hjust = "middle", fontface = 2, color = "black" ) +
+  geom_vline(xintercept = 0.8786198, linetype="solid", color = "#ffe785", size=12, alpha = 0.8) +
+  annotate(geom = "text", x = 0.8786198, y = 0.0130, label = "TLI", hjust = "middle", fontface = 2, color = "black") +
+  geom_pointrange(aes(ymin = lower.CL, ymax = upper.CL, shape = Genotype), size = 0.75, linewidth = 1.75,
+                  fill = "white", position = position_dodge(width = 0.06)) +
+  scale_shape_manual(values = c(22,24)) +
+  scale_color_manual(values = treatment_pallete, name = "Treatment") +
+  scale_y_continuous(labels = scales::label_number(accuracy = 0.001)) +
+  guides(color = guide_legend(title.position="top"), 
+         shape = guide_legend(title.position="top"))
 
-## Put together all the plots side by side
-Alt_metrics_smooth <- ggarrange(EVAP_smooth, Arid_smooth, Soil_moisture_smooth, PDSI_smooth, ncol = 4, nrow = 1, common.legend = TRUE)
-# Save them
-ggsave("./figures/Figure_S17_Alt_metrics_SMR_Treatment_Genotype.svg", Alt_metrics_smooth, height = 6, width = 16)
-ggsave("./figures/Figure_S17_Alt_metrics_SMR_Treatment_Genotype.png", Alt_metrics_smooth, height = 6, width = 16)
-rm(P1, P2, Alt_metrics_smooth, PDSI_smooth, Arid_smooth, Soil_moisture_smooth)
 
-#### Figure S19 Root/shoot mass rate - boxplots ####
+library(patchwork)
+Figure6_final <- Figure6a + (Figure6b / Figure_6c + plot_layout(guides = "collect") & theme(legend.box = "vertical", legend.spacing.y = unit(0, "cm"), legend.box.just = "left", legend.margin=margin(0,0,0,0))) +
+  plot_annotation(tag_levels = 'A') +
+  plot_layout(widths = c(1, 0.4)) 
+
+ggsave("figures/Figure6.svg", Figure6_final, width = 300, height = 175, units = "mm")
+ggsave("figures/Figure6.png", Figure6_final, width = 300, height = 175, units = "mm")
+
+
+#### Figure S17 Root/shoot mass rate - boxplots ####
 sampledata_germinants$RootMassRate # third timepoint
 sampledata_removed_NAs <- filter(sampledata_germinants, !(Timepoint == ""))
 sampledata_removed_NAs$Timepoint <- factor(sampledata_removed_NAs$Timepoint, levels = c("early", "middle", "late"))
 
-P1 <- ggplot(sampledata_removed_NAs, aes(x = Timepoint, y = RootMassRate)) +
+P1 <- ggplot(sampledata_removed_NAs, aes(x = Timepoint, y = RootMassRate, fill = Drought.or.Watered)) +
   geom_jitter(width = 0.3) + geom_boxplot(alpha = 0.8, outlier.colour = NA) +
   ylab("Root Mass Rate (g/day)") + facet_wrap(~Drought.or.Watered) +
-  scale_x_discrete(labels=c("early" = "Early", "middle" = "Middle", "late" = "Late")) 
+  scale_x_discrete(labels=c("early" = "Early", "middle" = "Middle", "late" = "Late"))  +
+  scale_fill_manual(values = treatment_pallete) +
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_text(angle = -45, vjust = 1, hjust=0))
 
-P2 <- ggplot(sampledata_removed_NAs, aes(x = Timepoint, y = ShootMassRate)) +
+P2 <- ggplot(sampledata_removed_NAs, aes(x = Timepoint, y = ShootMassRate, fill = Drought.or.Watered)) +
   geom_jitter(width = 0.3) + geom_boxplot(alpha = 0.8, outlier.colour = NA) +
   ylab("Shoot Mass Rate (g/day)") + facet_wrap(~Drought.or.Watered) +
-  scale_x_discrete(labels=c("early" = "Early", "middle" = "Middle", "late" = "Late"))
+  scale_x_discrete(labels=c("early" = "Early", "middle" = "Middle", "late" = "Late")) +
+  scale_fill_manual(values = treatment_pallete) +
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_text(angle = -45, vjust = 1, hjust=0))
 
-Plantmassrates_by_time <- ggarrange(P1, P2, labels = "AUTO")
+P3 <- ggplot(sampledata_removed_NAs, aes(x = Timepoint, y = RootShootRatio, fill = Drought.or.Watered)) +
+  geom_jitter(width = 0.3) + geom_boxplot(alpha = 0.8, outlier.colour = NA) +
+  ylab("Root/Shoot Ratio") + facet_wrap(~Drought.or.Watered) +
+  scale_x_discrete(labels=c("early" = "Early", "middle" = "Middle", "late" = "Late")) +
+  scale_fill_manual(values = treatment_pallete) +
+  theme(axis.title.x = element_blank(), 
+        axis.text.x = element_text(angle = -45, vjust = 1, hjust=0))
+  
+
+Plantmassrates_by_time <- ggarrange(P1, P2, P3, labels = "AUTO", legend = "none", nrow = 1)
 #stats
 mod.root  <- lmerTest::lmer(sqrt(RootMassRate) ~ Timepoint*Drought.or.Watered + (1|Block), data = sampledata_removed_NAs)
 mod.shoot <- lmerTest::lmer(sqrt(ShootMassRate) ~ Timepoint*Drought.or.Watered + (1|Block), data = sampledata_removed_NAs)
+mod.RS <- lmerTest::lmer(log(RootShootRatio) ~ Timepoint*Drought.or.Watered + (1|Block), data = sampledata_removed_NAs)
 anova(mod.root)
 anova(mod.shoot)
+anova(mod.RS)
 emmeans(mod.root,~Timepoint|Drought.or.Watered)
 emmeans(mod.shoot,~Timepoint)
-ggsave("./figures/S19_Plant_mass_rates_by_time.svg", Plantmassrates_by_time, height = 4, width = 8)
-ggsave("./figures/S19_Plant_mass_rates_by_time.png", Plantmassrates_by_time, height = 4, width = 8)
+emmeans(mod.RS, ~Timepoint|Drought.or.Watered)
+ggsave("./figures/S17_Plant_mass_rates_by_time.svg", Plantmassrates_by_time, height = 4, width = 8)
+ggsave("./figures/S17_Plant_mass_rates_by_time.png", Plantmassrates_by_time, height = 4, width = 8)

@@ -10,7 +10,7 @@ location_pallete <- c("SVR" = "#780c72", "HAY" = "#f5805d", "TLI" = "#ffe785", "
 
 # Take terraclimate point data and get mean annual precipitation, Evapotranspiration and PDSI
 # then calculate an aridity index.
-Get_aridity <- function(terraclimdf){
+Get_Normals <- function(terraclimdf){
   temp  <- terraclimdf %>% group_by(Year) %>% summarize(Annual_precip_mm = sum(ppt.mm.), Annual_ETo_mm = sum(pet.mm.), Annual_PDSI = mean(PDSI.unitless.), Annual_soilmoisture_mm = sum(soil.mm.))
   # get the last normal AKA 1990 to 2021 
   temp2 <- temp %>% filter(between(Year, 1990, 2021)) %>% summarize(MA_Prec = mean(Annual_precip_mm), MA_ETo = mean(Annual_ETo_mm), M_monthly_PDSI = mean(Annual_PDSI), MA_Soil_moisture = mean(Annual_soilmoisture_mm))
@@ -40,10 +40,10 @@ KNZ_Native <- read.csv("terraclimate_39.1056N_96.6099W.csv", skip = 14, header =
 
 
 # Get aridity indexes
-arid.df <- data.frame(rbind(Get_aridity(SVR_Native),
-Get_aridity(HAY_Native),
-Get_aridity(TLI_Native),
-Get_aridity(KNZ_Native)))
+arid.df <- data.frame(rbind(Get_Normals(SVR_Native),
+Get_Normals(HAY_Native),
+Get_Normals(TLI_Native),
+Get_Normals(KNZ_Native)))
 # rename rows and add site factor for plotting
 rownames(arid.df) <- c("SVR", "HAY", "TLI", "KNZ")
 arid.df$site <- as.factor(row.names(arid.df))
@@ -51,11 +51,11 @@ arid.df$site <- factor(arid.df$site, levels = c("SVR", "HAY","TLI", "KNZ"))
 # These values will be utilized in other scripts for linear modeling
 arid.df
 
-# MA_Prec   MA_ETo M_monthly_PDSI MA_Soil_moisture Aridity_index site
-# SVR 478.9250 1408.700      0.2431771         37.38437     0.3399766  SVR
-# HAY 601.7375 1333.322      0.6842187         92.87812     0.4513070  HAY
-# TLI 783.8156 1266.691      0.8786198        177.09688     0.6187901  TLI
-# KNZ 912.3438 1170.869      0.3597917        348.25937     0.7792024  KNZ
+#     MA_Prec  MA_ETo        M_monthly_PDSI       MA_Soil_moisture Aridity_index  site
+# SVR 478.9250 1408.700      0.2431771                37.38437     0.3399766      SVR
+# HAY 601.7375 1333.322      0.6842187                92.87812     0.4513070      HAY
+# TLI 783.8156 1266.691      0.8786198               177.09688     0.6187901      TLI
+# KNZ 912.3438 1170.869      0.3597917               348.25937     0.7792024      KNZ
 
 
 
@@ -64,32 +64,32 @@ a <- ggplot(arid.df, aes(x = site, y = MA_Prec, fill = site)) +
   geom_col(color = "black") +
   ylab("Normal Annual Precipitation 1990-2021 (mm)") +
   scale_fill_manual(name = "Site", values = location_pallete) +
-  theme(legend.text.align = 0, axis.title.x=element_blank(), legend.position = 'right')
+  theme(axis.title.x=element_blank(), legend.position = 'right')
   
 b <- ggplot(arid.df, aes(x = site, y = MA_ETo, fill = site)) +
   geom_col(color = "black") +
   ylab("Normal Annual Evapotranspiration 1990-2021 (mm)") +
   scale_fill_manual(name = "Site", values = location_pallete) +
-  theme(legend.text.align = 0, axis.title.x=element_blank(), legend.position = 'right')
+  theme(axis.title.x=element_blank(), legend.position = 'right')
 
 c <- ggplot(arid.df, aes(x = site, y = M_monthly_PDSI, fill = site)) +
   geom_col(color = "black") +
   ylab("Normal Monthly PDSI 1990-2021") +
   scale_fill_manual(name = "Site", values = location_pallete) +
-  theme(legend.text.align = 0, axis.title.x=element_blank(), legend.position = 'right')
+  theme(axis.title.x=element_blank(), legend.position = 'right')
 
 
 d <- ggplot(arid.df, aes(x = site, y = MA_Soil_moisture, fill = site)) +
   geom_col(color = "black") +
   ylab("Normal Annual Soil Moisture 1990-2021 (mm)") +
   scale_fill_manual(name = "Site", values = location_pallete) +
-  theme(legend.text.align = 0, axis.title.x=element_blank(), legend.position = 'right')
+  theme(axis.title.x=element_blank(), legend.position = 'right')
 
 e <- ggplot(arid.df, aes(x = site, y = Aridity_index, fill = site)) +
   geom_col(color = "black") +
   ylab("Aridity Index") +
   scale_fill_manual(name = "Site", values = location_pallete) +
-  theme(legend.text.align = 0, axis.title.x=element_blank(), legend.position = 'right')
+  theme(axis.title.x=element_blank(), legend.position = 'right')
 
 f <- ggarrange(a,b,c,d,e, common.legend = TRUE, legend = 'right', align = 'hv')
 
@@ -111,8 +111,6 @@ long.df <- data.frame(rbind(Get_data_30_years(SVR_Native),
                             Get_data_30_years(HAY_Native),
                             Get_data_30_years(TLI_Native),
                             Get_data_30_years(KNZ_Native)))
-
-
 
 # rename rows and add site factor for plotting
 long.df$site <- as.factor(rep(c("SVR", "HAY","TLI", "KNZ"), each = 32))
@@ -154,5 +152,3 @@ f <- ggarrange(a,b,c,d,e, common.legend = TRUE, legend = "right", align = 'hv', 
 
 ggsave("Annual_boxplots_by_site.svg", f, height = 9, width = 12)
 ggsave("Annual_boxplots_by_site.png", f, height = 9, width = 12)
-
-rm(a,b,c,d,e,f) # cleanup

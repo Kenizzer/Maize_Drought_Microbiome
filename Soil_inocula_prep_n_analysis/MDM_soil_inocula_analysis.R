@@ -65,8 +65,8 @@ ggsave("./figures/Figure2_RDA_16S_ITS.svg", RDA_16S_ITS, width = 6, height = 4)
 ggsave("./figures/Figure2_RDA_16S_ITS.png", RDA_16S_ITS, width = 6, height = 4)
 
 
-#### Supplemental Figure 5/6 ####
-## Supplemental Figure 5
+#### Supplemental Figure 4/5 ####
+## Supplemental Figure 4
 ## Taxonomic barplots for bacterial and fungal soil and inocula samples
 phylo.16s_phylum <- phyloseq::tax_glom(hmep.bact, taxrank= "Phylum") # 11 taxa
 # Make relative abundance 
@@ -119,8 +119,8 @@ top10_16S_inocula <- ggplot(phylum_top10_16S[phylum_top10_16S$Type == "Inocula",
         axis.ticks.x=element_blank())
 # combine and save
 tax_barplot_16S <- ggarrange(top10_16S_soil, top10_16S_inocula, nrow = 2, common.legend = TRUE, labels = "AUTO", legend = "right")
-ggsave("./figures/FigureS5_tax_barplot_16S.svg", tax_barplot_16S, width = 10, height = 6)
-ggsave("./figures/FigureS5_tax_barplot_16S.png", tax_barplot_16S, width = 10, height = 6)
+ggsave("./figures/FigureS4_tax_barplot_16S.svg", tax_barplot_16S, width = 10, height = 6)
+ggsave("./figures/FigureS4_tax_barplot_16S.png", tax_barplot_16S, width = 10, height = 6)
 
 ## Supplementary Figure 6
 phylo.ITS_phylum <- phyloseq::tax_glom(hmep.fungi, taxrank= "Class") # 25 taxa
@@ -172,11 +172,11 @@ top10_ITS_inocula <- ggplot(phylum_top10_ITS[phylum_top10_ITS$Type == "Inocula",
         axis.ticks.x=element_blank())
 # combine and save
 tax_barplot_ITS <- ggarrange(top10_ITS_soil, top10_ITS_inocula, nrow = 2, common.legend = TRUE, labels = "AUTO", legend = "right")
-ggsave("./figures/FigureS6_tax_barplot_ITS.svg", tax_barplot_ITS, width = 10, height = 6)
-ggsave("./figures/FigureS6_tax_barplot_ITS.png", tax_barplot_ITS, width = 10, height = 6)
+ggsave("./figures/FigureS5_tax_barplot_ITS.svg", tax_barplot_ITS, width = 10, height = 6)
+ggsave("./figures/FigureS5_tax_barplot_ITS.png", tax_barplot_ITS, width = 10, height = 6)
 
 #### Alpha Diversity Statistics ####
-## FigureS3
+## FigureS2
 ## Bacteria
 #extract metadata from clr transformed phyloseq object
 bact.clr.sampledata <- data.frame(sample_data(hmep.bact.clr))
@@ -241,11 +241,11 @@ c <- ggplot(plot(emmeans(mdsi.16S.InvSimp,~Location, type = "response"), plotit 
   scale_color_manual(values = location_pallete, name = "Collection Site") +
   theme(legend.text.align = 0, axis.title.x=element_blank())
 emm_16s_combo <- ggarrange(a,b,c, nrow = 1, labels = "AUTO", common.legend = TRUE, legend = "right")
-ggsave("./figures/FigureS3_alpha.div.emm.16s.svg", emm_16s_combo,  width = 12, height = 6)
-ggsave("./figures/FigureS3_alpha.div.emm.16s.png", emm_16s_combo,  width = 12, height = 6)
+ggsave("./figures/FigureS2_alpha.div.emm.16s.svg", emm_16s_combo,  width = 12, height = 6)
+ggsave("./figures/FigureS2_alpha.div.emm.16s.png", emm_16s_combo,  width = 12, height = 6)
 
 ## Fungi 
-## Figure S4
+## Figure S3
 #extract metadata from clr transformed phyloseq object
 fungi.clr.sampledata <- data.frame(sample_data(hmep.fungi.clr))
 #linear models
@@ -288,10 +288,16 @@ a <- ggplot(plot(emmeans(mdsi.ITS.z.richness,~Type, type = "response"), plotit =
   scale_color_manual(values = c("red", "blue"), name = "Substrate") +
   scale_x_discrete(limits = rev) +
   theme(legend.text.align = 0, axis.title.x=element_blank(), legend.position = 'right')
-ggsave("./figures/FigureS4_alpha.div.emm.ITS.svg", a,  width = 4, height = 4)
-ggsave("./figures/FigureS4_alpha.div.emm.ITS.png", a,  width = 4, height = 4)
+b<- ggplot(plot(emmeans(mdsi.ITS.shannon,~Location, type = "response"), plotit = FALSE), aes(x = pri.fac, y = the.emmean, color = pri.fac)) +
+  ylab("Shannon Diversity") + scale_y_continuous(expand = c(0, 0), limits = c(0, NA)) +
+  geom_pointrange(aes(ymin = lower.CL, ymax = upper.CL), size = 0.75, linewidth = 2, fill = "black", shape = 22) +
+  scale_color_manual(values = location_pallete, name = "Collection Site") +
+  theme(legend.text.align = 0, axis.title.x=element_blank(), legend.position = 'right')
+c <- ggarrange(a,b, labels = "AUTO")
+ggsave("./figures/FigureS3_alpha.div.emm.ITS.svg", c,  width = 8, height = 4)
+ggsave("./figures/FigureS3_alpha.div.emm.ITS.png", c,  width = 8, height = 4)
 #clean env
-
+rm(a,b,c)
 
 #### PERMANOVA ####
 ## Bacteria
@@ -323,3 +329,4 @@ Residual 56   202016 0.66548
 Total    60   303565 1.00000"
 drt.fung.dbRDA <- ordinate(hmep.fungi.clr, distance = 'euclidean', method = 'RDA', formula=~Location+ Type+ Condition(logObs))
 summary(drt.fung.dbRDA)
+
