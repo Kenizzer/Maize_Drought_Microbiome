@@ -1,6 +1,6 @@
 # Maize Drought Microbiome
 
-## bioRxiv Preprint
+## Citation
 <https://doi.org/10.1101/2023.04.11.536405>
 
 ## Abstract
