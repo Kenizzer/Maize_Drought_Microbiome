@@ -1,7 +1,7 @@
 # Maize Drought Microbiome
 
 ## Citation
-<https://doi.org/10.1101/2023.04.11.536405>
+<https://doi.org/10.1007/s11104-024-06853-x>
 
 ## Abstract
 
